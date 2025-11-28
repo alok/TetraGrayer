@@ -86,6 +86,10 @@ instance : HMul ℝ CliffordVector CliffordVector := ⟨smul⟩
 instance : HMul CliffordVector ℝ CliffordVector := ⟨fun v s => smul s v⟩
 instance : HDiv CliffordVector ℝ CliffordVector := ⟨sdiv⟩
 
+/-- Index into vector components with `v[i]` syntax. -/
+instance : GetElem CliffordVector Nat ℝ (fun _ i => i < 4) where
+  getElem v i _ := get v i
+
 end CliffordVector
 
 namespace Bivector
@@ -128,6 +132,10 @@ instance : SMul ℝ Bivector := ⟨smul⟩
 instance : HMul ℝ Bivector Bivector := ⟨smul⟩
 instance : HMul Bivector ℝ Bivector := ⟨fun b s => smul s b⟩
 
+/-- Index into bivector components with `b[i]` syntax. -/
+instance : GetElem Bivector Nat ℝ (fun _ i => i < 6) where
+  getElem b i _ := get b i
+
 end Bivector
 
 namespace Trivector
@@ -157,6 +165,10 @@ instance : Add Trivector := ⟨add⟩
 instance : Neg Trivector := ⟨neg⟩
 instance : SMul ℝ Trivector := ⟨smul⟩
 instance : HMul ℝ Trivector Trivector := ⟨smul⟩
+
+/-- Index into trivector components with `t[i]` syntax. -/
+instance : GetElem Trivector Nat ℝ (fun _ i => i < 4) where
+  getElem t i _ := get t i
 
 end Trivector
 
@@ -211,6 +223,10 @@ def sdiv (e : Versor) (s : ℝ) : Versor := smul (1.0 / s) e
 
 instance : Sub Versor := ⟨sub⟩
 instance : HDiv Versor ℝ Versor := ⟨sdiv⟩
+
+/-- Index into versor components with `e[i]` syntax (scalar=0, bivec=1-6, pseudo=7). -/
+instance : GetElem Versor Nat ℝ (fun _ i => i < 8) where
+  getElem e i _ := get e i
 
 end Versor
 
@@ -386,6 +402,19 @@ def simpleRotorFromAngle (v1 v2 : CliffordVector) (angle : ℝ) : Versor :=
   else
     -- Galilean case (null/lightlike plane)
     ⟨1.0, -(halfAngle • bivec), 0⟩
+
+-- ============================================================================
+-- Notation for Clifford algebra operations
+-- ============================================================================
+
+namespace CliffordNotation
+/-- Wedge product of vectors: v ∧ᶜ w -/
+scoped infix:70 " ∧ᶜ " => vectorWedge
+/-- Dot product of vectors: v ⋅ᶜ w -/
+scoped infix:70 " ⋅ᶜ " => vectorDot
+/-- Bilinear multiply (sandwich): E ⊛ v -/
+scoped infix:75 " ⊛ " => bilinearMultiply
+end CliffordNotation
 
 end Core
 end TetraGrayer

@@ -49,6 +49,10 @@ def yellow : RGB := ⟨255, 255, 0⟩
 /-- Cyan. -/
 def cyan : RGB := ⟨0, 255, 255⟩
 
+/-- PPM format string: "r g b". -/
+instance : ToString RGB where
+  toString c := s!"{c.r.toNat} {c.g.toNat} {c.b.toNat}"
+
 end RGB
 
 /-- Clamp Nat to 255 (for legacy compatibility). -/
@@ -64,8 +68,7 @@ def writePPM (path : System.FilePath) (w h : Nat) (pix : Nat → Nat → RGB) : 
     for y in [0:h] do
       let mut line := ""
       for x in [0:w] do
-        let c := pix x y
-        line := line ++ s!"{c.r.toNat} {c.g.toNat} {c.b.toNat} "
+        line := line ++ toString (pix x y) ++ " "
       handle.putStr (line ++ "\n")
 
 end Image
