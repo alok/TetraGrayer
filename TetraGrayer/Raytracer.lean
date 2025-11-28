@@ -26,19 +26,36 @@ open Core Integrator Spacetimes Image Render
 
 /-- Parameters for Doran black hole raytracing. -/
 structure DoranParams where
-  spinParam : ℝ := 0.5      -- black hole spin a (0 = Schwarzschild)
-  extractRadius : ℝ := 50.0 -- radius at which rays are considered escaped
-  maxParam : ℝ := 500.0     -- max affine parameter before timeout
-  maxStepRatio : ℝ := 40.0  -- max stepsize ratio for blueshift cutoff
-  maxSteps : Nat := 100000  -- max integration steps
-deriving Repr
+  /-- Black hole spin parameter a (0 = Schwarzschild, 1 = extremal Kerr) -/
+  spinParam : ℝ := 0.5
+  /-- Radius at which rays are considered escaped -/
+  extractRadius : ℝ := 50.0
+  /-- Maximum affine parameter before timeout -/
+  maxParam : ℝ := 500.0
+  /-- Maximum stepsize ratio for blueshift cutoff -/
+  maxStepRatio : ℝ := 40.0
+  /-- Maximum integration steps -/
+  maxSteps : Nat := 100000
+deriving Repr, Inhabited
+
+namespace DoranParams
+/-- Schwarzschild black hole (non-rotating). -/
+def schwarzschild : DoranParams := { spinParam := 0.0 }
+/-- Fast-spinning Kerr black hole. -/
+def fastSpin : DoranParams := { spinParam := 0.9 }
+/-- High resolution settings for final renders. -/
+def highQuality : DoranParams := { maxSteps := 500000, maxParam := 1000.0 }
+end DoranParams
 
 /-- Parameters for flat spacetime raytracing. -/
 structure FlatParams where
+  /-- Radius at which rays are considered escaped -/
   extractRadius : ℝ := 50.0
+  /-- Maximum affine parameter -/
   maxParam : ℝ := 200.0
+  /-- Maximum integration steps -/
   maxSteps : Nat := 10000
-deriving Repr
+deriving Repr, Inhabited
 
 /-- Compute single pixel color for Doran spacetime. Pure function. -/
 def doranPixel (cam : CameraParams) (params : DoranParams) (x y : Nat) : RGB :=

@@ -18,13 +18,19 @@ open Core
 
 /-- Camera parameters for ray tracing. -/
 structure CameraParams where
-  position : CliffordVector      -- camera center position (t,x,y,z)
-  orientation : Versor           -- camera orientation rotor
-  hFov : ℝ                       -- horizontal field of view in radians
-  width : Nat                    -- image width in pixels
-  height : Nat                   -- image height in pixels
-  dparam : ℝ                     -- initial step size for integration
-deriving Repr
+  /-- Camera center position (t, x, y, z) -/
+  position : CliffordVector
+  /-- Camera orientation as a rotor (even multivector) -/
+  orientation : Versor
+  /-- Horizontal field of view in radians -/
+  hFov : ℝ
+  /-- Image width in pixels -/
+  width : Nat
+  /-- Image height in pixels -/
+  height : Nat
+  /-- Initial step size for integration -/
+  dparam : ℝ
+deriving Repr, Inhabited
 
 namespace CameraParams
 
@@ -36,6 +42,30 @@ def default (w h : Nat) : CameraParams :=
   , width := w
   , height := h
   , dparam := 0.05 }
+
+/-- Standard HD resolution (1280x720). -/
+def hd : CameraParams := default 1280 720
+
+/-- Standard 4K resolution (3840x2160). -/
+def uhd4k : CameraParams := default 3840 2160
+
+/-- Small preview resolution (320x180). -/
+def preview : CameraParams := default 320 180
+
+/-- Total number of pixels. -/
+def totalPixels (cam : CameraParams) : Nat := cam.width * cam.height
+
+/-- Aspect ratio (width / height). -/
+def aspectRatio (cam : CameraParams) : ℝ :=
+  Float.ofNat cam.width / Float.ofNat cam.height
+
+/-- Vertical field of view (derived from horizontal FOV and aspect ratio). -/
+def vFov (cam : CameraParams) : ℝ :=
+  cam.hFov / cam.aspectRatio
+
+/-- Create camera with position at given distance along +x axis. -/
+def atDistance (d : ℝ) (w h : Nat) : CameraParams :=
+  { default w h with position := CliffordVector.mk4 0.0 d 0.0 0.0 }
 
 end CameraParams
 
