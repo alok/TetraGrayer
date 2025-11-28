@@ -1,55 +1,107 @@
 /-
-Camera model producing per-pixel initial rays in flat spacetime.
+Camera model using Clifford algebra rotors for proper 4D orientation.
+
+Ported from tetra-gray's image_id.cuh (ImageInitialDataSolver).
+
+The camera points in -x direction by default, with width along +y and height along +z.
+This convention is chosen so positive rotation angles correspond to increased pixel indices.
+The 0th pixel is in the top-left corner.
 -/
 
 import TetraGrayer.Core.Scalar
-import TetraGrayer.Core.Vector
+import TetraGrayer.Core.Clifford
+import TetraGrayer.Core.Particle
 
 namespace TetraGrayer
 
 open Core
 
-structure Ray where
-  pos : Vec4
-  mom : Vec4
+/-- Camera parameters for ray tracing. -/
+structure CameraParams where
+  position : CliffordVector      -- camera center position (t,x,y,z)
+  orientation : Versor           -- camera orientation rotor
+  hFov : ℝ                       -- horizontal field of view in radians
+  width : Nat                    -- image width in pixels
+  height : Nat                   -- image height in pixels
+  dparam : ℝ                     -- initial step size for integration
+deriving Repr
 
-structure Camera where
-  origin    : Vec4
-  basisT    : Vec4  -- time direction
-  basisOut  : Vec4  -- forward direction
-  basisLeft : Vec4
-  basisUp   : Vec4
-  hFovRad   : ℝ
-  width     : Nat
-  height    : Nat
+namespace CameraParams
 
-namespace Camera
-
-def default (w h : Nat) : Camera :=
-  { origin := vec4 0.0 0.0 0.0 0.0
-  , basisT := vec4 1.0 0.0 0.0 0.0
-  , basisOut := vec4 0.0 0.0 0.0 (-1.0)
-  , basisLeft := vec4 0.0 (-1.0) 0.0 0.0
-  , basisUp := vec4 0.0 0.0 1.0 0.0
-  , hFovRad := deg2rad 60.0
+/-- Default camera at origin, looking along -x, with 90° FOV. -/
+def default (w h : Nat) : CameraParams :=
+  { position := CliffordVector.mk4 0.0 20.0 0.0 0.0
+  , orientation := Versor.one
+  , hFov := π / 2.0
   , width := w
-  , height := h }
+  , height := h
+  , dparam := 0.05 }
 
-/-- Compute initial ray for pixel (x,y), 0-based with y downward. -/
-def pixelRay (cam : Camera) (x y : Nat) : Ray :=
-  let w := cam.width; let h := cam.height
-  let fx : ℝ := (Float.ofNat x + 0.5) / Float.ofNat (Nat.max w 1)
-  let fy : ℝ := (Float.ofNat y + 0.5) / Float.ofNat (Nat.max h 1)
-  -- Approximate tan for small angles: tan(a) ≈ a + a^3/3 (sufficient for small HFOV)
-  let a := cam.hFovRad / 2.0
-  let tanA := a + (a*a*a) / 3.0
-  let u : ℝ := (2.0 * fx - 1.0) * tanA
-  let aspect : ℝ := Float.ofNat w / Float.ofNat (Nat.max h 1)
-  let v : ℝ := (1.0 - 2.0 * fy) * (tanA / aspect)
-  let dir := vadd cam.basisOut (vadd (vsmul u cam.basisLeft) (vsmul v cam.basisUp))
-  { pos := cam.origin
-  , mom := normalizeSpatial dir }
+end CameraParams
 
-end Camera
+/-- Baseline direction vectors for the camera.
+
+Camera canonically points in -x direction:
+- out = -x (forward)
+- left = +y (image width direction)
+- up = +z (image height direction)
+- time = +t
+-/
+def baselineTimeDir : CliffordVector := CliffordVector.mk4 1.0 0.0 0.0 0.0
+def baselineOutDir : CliffordVector := CliffordVector.mk4 0.0 (-1.0) 0.0 0.0
+def baselineLeftDir : CliffordVector := CliffordVector.mk4 0.0 0.0 1.0 0.0
+def baselineUpDir : CliffordVector := CliffordVector.mk4 0.0 0.0 0.0 1.0
+
+/-- Compute initial particle data for a pixel.
+
+Creates a null geodesic (photon) starting at the camera position with
+momentum pointing towards the pixel direction on the celestial sphere.
+
+Parameters:
+- cam: camera parameters
+- pixelIdx: linear pixel index (row-major, 0 at top-left)
+
+Returns: ODEData Particle ready for integration.
+-/
+def pixelInitialData (cam : CameraParams) (pixelIdx : Nat) : ODEData Particle :=
+  let w := cam.width
+  let h := cam.height
+
+  -- Angular step per pixel
+  let da := cam.hFov / Float.ofNat w
+
+  -- Convert linear index to (width_idx, height_idx)
+  let heightIdx := pixelIdx / w
+  let widthIdx := pixelIdx - heightIdx * w
+
+  -- Width angle: positive = looking left
+  -- Center of pixel, 0.5 offset so centerline is pixel boundary
+  let widthAngle := (Float.ofInt (Int.ofNat widthIdx - Int.ofNat (w / 2)) + 0.5) * da
+
+  -- Height angle: positive = looking up
+  let heightAngle := (Float.ofInt (Int.ofNat heightIdx - Int.ofNat (h / 2)) + 0.5) * da
+
+  -- Create rotors for pixel direction
+  -- Left-right rotation in the out-left plane
+  let rotorLR := simpleRotorFromAngle baselineOutDir baselineLeftDir widthAngle
+  -- Up-down rotation in the up-out plane
+  let rotorUD := simpleRotorFromAngle baselineUpDir baselineOutDir heightAngle
+
+  -- Central four-momentum: null vector pointing "out" minus "time"
+  -- For photons: p^μ p_μ = 0, with p^t = -1 (ingoing to future)
+  let centralMom := baselineOutDir - baselineTimeDir
+
+  -- Compose rotors: orientation * left-right * up-down
+  -- Order matters: left-right first in body coords → leftmost in product
+  let totalRotor := cam.orientation * rotorLR * rotorUD
+
+  -- Apply rotor to get final momentum direction
+  let momentum := bilinearMultiply totalRotor centralMom
+
+  ODEData.ofData (Particle.ofPosMom cam.position momentum) 0.0 cam.dparam
+
+/-- Compute pixel data from 2D coordinates. -/
+def pixelInitialData2D (cam : CameraParams) (x y : Nat) : ODEData Particle :=
+  pixelInitialData cam (y * cam.width + x)
 
 end TetraGrayer

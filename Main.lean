@@ -1,5 +1,5 @@
-import TetraGrayer.Camera2
-import TetraGrayer.Raytracer2
+import TetraGrayer.Camera
+import TetraGrayer.Raytracer
 import TetraGrayer.Termination
 import TetraGrayer.Core.Clifford
 

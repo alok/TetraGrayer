@@ -1,0 +1,145 @@
+import Lake
+open Lake DSL
+
+package «TetraGrayer» where
+  version := v!"0.1.0"
+  leanOptions := #[
+    ⟨`pp.unicode.fun, true⟩,
+    ⟨`autoImplicit, true⟩,
+    ⟨`relaxedAutoImplicit, false⟩
+  ]
+
+@[default_target]
+lean_lib «TetraGrayer» where
+  globs := #[.submodules `TetraGrayer]
+
+lean_exe «tetragrayer» where
+  root := `Main
+
+/-- Run flat spacetime render and compare against upstream reference.
+
+Usage: lake run test
+-/
+script test do
+  -- Build first
+  let build ← IO.Process.output {
+    cmd := "lake"
+    args := #["build"]
+  }
+  if build.exitCode != 0 then
+    IO.eprintln s!"Build failed:\n{build.stderr}"
+    return 1
+
+  IO.println "Running flat spacetime render..."
+  let render ← IO.Process.output {
+    cmd := "./.lake/build/bin/tetragrayer"
+    args := #["flat"]
+  }
+  IO.println render.stdout
+  if render.exitCode != 0 then
+    IO.eprintln s!"Render failed:\n{render.stderr}"
+    return 1
+
+  -- Check if reference image exists
+  let refPath := "external/tetra-gray/images/flat.png"
+  let refExists ← System.FilePath.pathExists refPath
+  if !refExists then
+    IO.eprintln s!"Reference image not found: {refPath}"
+    IO.eprintln "Skipping comparison test."
+    return 0
+
+  -- Check if ImageMagick is available
+  let magickCheck ← IO.Process.output {
+    cmd := "which"
+    args := #["magick"]
+  }
+  if magickCheck.exitCode != 0 then
+    IO.eprintln "ImageMagick not found. Skipping pixel comparison."
+    IO.eprintln "Install with: brew install imagemagick"
+    return 0
+
+  IO.println "Converting Lean output to PNG..."
+  let convert ← IO.Process.output {
+    cmd := "magick"
+    args := #["artifacts/flat-full.ppm", "/tmp/lean-flat.png"]
+  }
+  if convert.exitCode != 0 then
+    IO.eprintln s!"Conversion failed:\n{convert.stderr}"
+    return 1
+
+  IO.println "Comparing against upstream reference..."
+  let compare ← IO.Process.output {
+    cmd := "magick"
+    args := #["compare", "-metric", "AE",
+              "/tmp/lean-flat.png", refPath,
+              "/tmp/diff.png"]
+  }
+  -- Note: ImageMagick returns exit code 1 if images differ at all
+  -- The diff count is in stderr
+
+  -- Parse the diff count (extract leading integer)
+  let diffOutput := compare.stderr.trim
+  let diffCount := diffOutput.takeWhile Char.isDigit
+  let diffNum := diffCount.toNat!
+
+  let totalPixels : Nat := 1280 * 720  -- 921600
+  let maxAllowed : Nat := 1000  -- < 0.11% tolerance
+
+  IO.println s!"Total pixels: {totalPixels}"
+  IO.println s!"Differing pixels: {diffNum}"
+
+  if diffNum == 0 then
+    IO.println "\n✓ PASS: Images are bitwise identical!"
+    return 0
+  else if diffNum < maxAllowed then
+    let pct := (diffNum.toFloat * 100.0) / totalPixels.toFloat
+    IO.println s!"Difference: {pct}%"
+    IO.println "\n✓ PASS: Images match within tolerance (< 0.11% difference)"
+    IO.println "  (Minor differences due to floating-point rounding between GPU/CPU)"
+    return 0
+  else
+    let pct := (diffNum.toFloat * 100.0) / totalPixels.toFloat
+    IO.println s!"Difference: {pct}%"
+    IO.println "\n✗ FAIL: Images differ significantly"
+    IO.println "  Check /tmp/diff.png for visual diff"
+    return 1
+
+/-- Render all test images (small sizes for quick testing). -/
+script render_test do
+  let build ← IO.Process.output {
+    cmd := "lake"
+    args := #["build"]
+  }
+  if build.exitCode != 0 then
+    IO.eprintln s!"Build failed:\n{build.stderr}"
+    return 1
+
+  IO.println "Running test renders..."
+  let render ← IO.Process.spawn {
+    cmd := "./.lake/build/bin/tetragrayer"
+    args := #["test"]
+    stdout := .inherit
+    stderr := .inherit
+  }
+  let exitCode ← render.wait
+  return exitCode.toNat.toUInt32
+
+/-- Render full resolution flat and Doran images. -/
+script render_full do
+  let build ← IO.Process.output {
+    cmd := "lake"
+    args := #["build"]
+  }
+  if build.exitCode != 0 then
+    IO.eprintln s!"Build failed:\n{build.stderr}"
+    return 1
+
+  IO.println "Running full renders..."
+  let render ← IO.Process.spawn {
+    cmd := "./.lake/build/bin/tetragrayer"
+    args := #["all"]
+    stdout := .inherit
+    stderr := .inherit
+  }
+  let exitCode ← render.wait
+  return exitCode.toNat.toUInt32

@@ -38,7 +38,7 @@ v = t̂ cosh(β) + φ̂ sinh(β)
 
 where t̂ is the time basis vector and φ̂ is the azimuthal basis vector.
 -/
-def doranVectorV (beta sinPhi cosPhi : ℝ) (that phihat : CliffordVector) : CliffordVector :=
+def doranVectorV (beta _sinPhi _cosPhi : ℝ) (that phihat : CliffordVector) : CliffordVector :=
   Float.cosh beta * that + Float.sinh beta * phihat
 
 /-- Position gauge h: transforms vectors from tetrad frame to coordinate frame. -/
