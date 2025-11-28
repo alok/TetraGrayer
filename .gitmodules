@@ -1,0 +1,3 @@
+[submodule "external/tetra-gray"]
+	path = external/tetra-gray
+	url = https://github.com/muphrid15/tetra-gray
