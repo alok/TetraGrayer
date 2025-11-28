@@ -1,6 +1,5 @@
 import TetraGrayer.Camera
 import TetraGrayer.Raytracer
-import TetraGrayer.Termination
 import TetraGrayer.Core.Clifford
 
 open TetraGrayer
@@ -13,7 +12,7 @@ def renderFlatFull : IO Unit := do
     hFov := π / 2.0
     dparam := 0.05 }
   let params := FlatParams.mk 50.0 200.0 10000
-  renderFlat2 "artifacts/flat-full.ppm" cam params
+  renderFlat "artifacts/flat-full.ppm" cam params
 
 /-- Render full-resolution Doran image matching upstream doran.cu -/
 def renderDoranFull : IO Unit := do

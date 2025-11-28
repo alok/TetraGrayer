@@ -85,9 +85,12 @@ def neg (v : CliffordVector) : CliffordVector :=
 def sdiv (v : CliffordVector) (s : ℝ) : CliffordVector :=
   smul (1.0 / s) v
 
+-- Algebraic instances
+instance : Zero CliffordVector := ⟨zero⟩
 instance : Add CliffordVector := ⟨add⟩
 instance : Sub CliffordVector := ⟨sub⟩
 instance : Neg CliffordVector := ⟨neg⟩
+instance : SMul ℝ CliffordVector := ⟨smul⟩
 instance : HMul ℝ CliffordVector CliffordVector := ⟨smul⟩
 instance : HMul CliffordVector ℝ CliffordVector := ⟨fun v s => smul s v⟩
 instance : HDiv CliffordVector ℝ CliffordVector := ⟨sdiv⟩
@@ -131,9 +134,12 @@ def smul (s : ℝ) (b : Bivector) : Bivector :=
 def neg (b : Bivector) : Bivector :=
   ⟨-b.b01, -b.b02, -b.b12, -b.b03, -b.b13, -b.b23⟩
 
+-- Algebraic instances
+instance : Zero Bivector := ⟨zero⟩
 instance : Add Bivector := ⟨add⟩
 instance : Sub Bivector := ⟨sub⟩
 instance : Neg Bivector := ⟨neg⟩
+instance : SMul ℝ Bivector := ⟨smul⟩
 instance : HMul ℝ Bivector Bivector := ⟨smul⟩
 instance : HMul Bivector ℝ Bivector := ⟨fun b s => smul s b⟩
 
@@ -165,8 +171,11 @@ def neg (t : Trivector) : Trivector :=
 def smul (s : ℝ) (t : Trivector) : Trivector :=
   ⟨s * t.t012, s * t.t013, s * t.t023, s * t.t123⟩
 
+-- Algebraic instances
+instance : Zero Trivector := ⟨zero⟩
 instance : Add Trivector := ⟨add⟩
 instance : Neg Trivector := ⟨neg⟩
+instance : SMul ℝ Trivector := ⟨smul⟩
 instance : HMul ℝ Trivector Trivector := ⟨smul⟩
 
 end Trivector
@@ -219,9 +228,13 @@ def sub (a b : Versor) : Versor := add a (neg b)
 /-- Division by scalar. -/
 def sdiv (e : Versor) (s : ℝ) : Versor := smul (1.0 / s) e
 
+-- Algebraic instances
+instance : Zero Versor := ⟨zero⟩
+instance : One Versor := ⟨one⟩
 instance : Add Versor := ⟨add⟩
 instance : Sub Versor := ⟨sub⟩
 instance : Neg Versor := ⟨neg⟩
+instance : SMul ℝ Versor := ⟨smul⟩
 instance : HMul ℝ Versor Versor := ⟨smul⟩
 instance : HMul Versor ℝ Versor := ⟨fun e s => smul s e⟩
 instance : HDiv Versor ℝ Versor := ⟨sdiv⟩

@@ -2,6 +2,11 @@
 Unified raytracer supporting flat and Doran (Kerr) spacetimes.
 
 Ported from tetra-gray's raytracer.cuh.
+
+Features:
+- Parallel rendering using Lean 4's task system
+- Chunked execution for optimal cache locality
+- Support for both flat and curved spacetimes
 -/
 
 import TetraGrayer.Core.Scalar
@@ -13,10 +18,11 @@ import TetraGrayer.Integrator.Generic
 import TetraGrayer.Spacetimes.Doran
 import TetraGrayer.Image.PPM
 import TetraGrayer.Image.Colormap
+import TetraGrayer.Render.Parallel
 
 namespace TetraGrayer
 
-open Core Integrator Spacetimes Image
+open Core Integrator Spacetimes Image Render
 
 /-- Parameters for Doran black hole raytracing. -/
 structure DoranParams where
@@ -34,66 +40,83 @@ structure FlatParams where
   maxSteps : Nat := 10000
 deriving Repr
 
-/-- Render a Doran (Kerr) black hole image.
+/-- Compute single pixel color for Doran spacetime. Pure function. -/
+def doranPixel (cam : CameraParams) (params : DoranParams) (x y : Nat) : RGB :=
+  let pixelIdx := y * cam.width + x
+  let ode0 := pixelInitialData cam pixelIdx
+  let odeF := integrateParticleAdaptive
+    doranRHS
+    params.spinParam
+    cam.dparam
+    params.extractRadius
+    params.maxParam
+    params.maxStepRatio
+    params.maxSteps
+    ode0
+  sphericalColormap params.extractRadius odeF
+
+/-- Compute single pixel color for flat spacetime. Pure function. -/
+def flatPixel (cam : CameraParams) (params : FlatParams) (x y : Nat) : RGB :=
+  let pixelIdx := y * cam.width + x
+  let ode0 := pixelInitialData cam pixelIdx
+  let odeF := integrateParticleSimple
+    flatRHS
+    (fun d => escaped params.extractRadius d || paramExceeded params.maxParam d)
+    params.maxSteps
+    ode0
+  sphericalColormap params.extractRadius odeF
+
+/-- Render a Doran (Kerr) black hole image in parallel.
 
 This is the main entry point for black hole visualization.
+Uses parallel chunk rendering for optimal performance.
 -/
-def renderDoran (out : System.FilePath) (cam : CameraParams) (params : DoranParams) : IO Unit := do
-  let w := cam.width
-  let h := cam.height
-
+def renderDoran (out : System.FilePath) (cam : CameraParams) (params : DoranParams)
+    (numChunks : Nat := 8) : IO Unit := do
   IO.println s!"Rendering Doran black hole to {out.toString}"
-  IO.println s!"  Size: {w}x{h}, spin a={params.spinParam}"
+  IO.println s!"  Size: {cam.width}x{cam.height}, spin a={params.spinParam}"
   IO.println s!"  Extract radius: {params.extractRadius}, max param: {params.maxParam}"
+  IO.println s!"  Parallel chunks: {numChunks}"
 
-  let pixel := fun (x y : Nat) =>
-    let pixelIdx := y * w + x
-    let ode0 := pixelInitialData cam pixelIdx
+  let cfg : RenderConfig := {
+    width := cam.width
+    height := cam.height
+    numChunks := numChunks
+    showProgress := false
+  }
 
-    -- Integrate with adaptive stepsize
-    let odeF := integrateParticleAdaptive
-      doranRHS
-      params.spinParam
-      cam.dparam
-      params.extractRadius
-      params.maxParam
-      params.maxStepRatio
-      params.maxSteps
-      ode0
-
-    sphericalColormap params.extractRadius odeF
-
-  writePPM out w h pixel
+  renderParallel out cfg (doranPixel cam params)
   IO.println "Done."
 
-/-- Render a flat spacetime image for testing/comparison.
+/-- Render a flat spacetime image in parallel.
 
-Uses the new Clifford-based camera with proper rotor orientation.
+Uses the Clifford-based camera with proper rotor orientation.
 In flat spacetime, rays travel in straight lines but we still use
 the spherical colormap based on final position.
 -/
-def renderFlat2 (out : System.FilePath) (cam : CameraParams) (params : FlatParams) : IO Unit := do
-  let w := cam.width
-  let h := cam.height
-
+def renderFlat (out : System.FilePath) (cam : CameraParams) (params : FlatParams)
+    (numChunks : Nat := 8) : IO Unit := do
   IO.println s!"Rendering flat spacetime to {out.toString}"
-  IO.println s!"  Size: {w}x{h}"
+  IO.println s!"  Size: {cam.width}x{cam.height}"
+  IO.println s!"  Parallel chunks: {numChunks}"
 
-  let pixel := fun (x y : Nat) =>
-    let pixelIdx := y * w + x
-    let ode0 := pixelInitialData cam pixelIdx
+  let cfg : RenderConfig := {
+    width := cam.width
+    height := cam.height
+    numChunks := numChunks
+    showProgress := false
+  }
 
-    -- Integrate with simple fixed step
-    let odeF := integrateParticleSimple
-      flatRHS
-      (fun d => escaped params.extractRadius d || paramExceeded params.maxParam d)
-      params.maxSteps
-      ode0
+  renderParallel out cfg (flatPixel cam params)
+  IO.println "Done."
 
-    -- Use spherical colormap based on final position (same as Doran)
-    sphericalColormap params.extractRadius odeF
+/-- Sequential (non-parallel) flat render for comparison/debugging. -/
+def renderFlatSequential (out : System.FilePath) (cam : CameraParams) (params : FlatParams)
+    : IO Unit := do
+  IO.println s!"Rendering flat spacetime (sequential) to {out.toString}"
+  IO.println s!"  Size: {cam.width}x{cam.height}"
 
-  writePPM out w h pixel
+  writePPM out cam.width cam.height (flatPixel cam params)
   IO.println "Done."
 
 /-- Quick test render: small Doran image. -/
@@ -110,6 +133,6 @@ def testFlatSmall : IO Unit := do
     position := CliffordVector.mk4 0.0 20.0 0.0 0.0
     dparam := 0.05 }
   let params := FlatParams.mk 50.0 200.0 10000
-  renderFlat2 "artifacts/flat-test.ppm" cam params
+  renderFlat "artifacts/flat-test.ppm" cam params
 
 end TetraGrayer

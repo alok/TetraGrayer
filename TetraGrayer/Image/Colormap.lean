@@ -25,9 +25,9 @@ def rgbToSingle (r g b : Nat) : UInt32 :=
 
 /-- Convert packed UInt32 back to RGB. -/
 def singleToRGB (c : UInt32) : RGB :=
-  { r := ((c >>> 16) &&& 0xFF).toNat
-  , g := ((c >>> 8) &&& 0xFF).toNat
-  , b := (c &&& 0xFF).toNat }
+  { r := ((c >>> 16) &&& 0xFF).toUInt8
+  , g := ((c >>> 8) &&& 0xFF).toUInt8
+  , b := (c &&& 0xFF).toUInt8 }
 
 /-- Test if angle falls on a grid stripe.
 
@@ -66,23 +66,18 @@ def sphericalColormap (escapeRadius : ℝ) (data : ODEData Particle) : RGB :=
     -- Check if on grid line
     if testStripe theta stripeInterval stripeHalfWidth ||
        testStripe phi stripeInterval stripeHalfWidth then
-      -- Black grid lines
-      { r := 0, g := 0, b := 0 }
+      RGB.black
     else
       -- Quadrant colors based on Cartesian y,z
       let y := pos.v2
       let z := pos.v3
-      if y > 0.0 && z > 0.0 then
-        { r := 255, g := 0, b := 0 }      -- red
-      else if y < 0.0 && z > 0.0 then
-        { r := 0, g := 255, b := 0 }      -- green
-      else if y > 0.0 && z < 0.0 then
-        { r := 0, g := 0, b := 255 }      -- blue
-      else
-        { r := 255, g := 255, b := 0 }    -- yellow
+      if y > 0.0 && z > 0.0 then RGB.red
+      else if y < 0.0 && z > 0.0 then RGB.green
+      else if y > 0.0 && z < 0.0 then RGB.blue
+      else RGB.yellow
   else
     -- Didn't escape: cyan
-    { r := 0, g := 255, b := 255 }
+    RGB.cyan
 
 /-- Simpler colormap for flat spacetime testing (based on momentum direction). -/
 def flatColormap (dir : CliffordVector) : RGB :=
@@ -95,13 +90,11 @@ def flatColormap (dir : CliffordVector) : RGB :=
   let ny := y / denom
   -- Simple grid using thresholds on normalized coords
   let grid := Float.abs nx > 0.95 || Float.abs ny > 0.95
-  let quad :=
-    if nx >= 0.0 && ny >= 0.0 then (220, 50, 50)
-    else if nx < 0.0 && ny >= 0.0 then (50, 220, 50)
-    else if nx < 0.0 && ny < 0.0 then (50, 50, 220)
-    else (220, 220, 50)
-  let (r8, g8, b8) := if grid then (255, 255, 255) else quad
-  { r := r8, g := g8, b := b8 }
+  if grid then RGB.white
+  else if nx >= 0.0 && ny >= 0.0 then RGB.ofNat 220 50 50
+  else if nx < 0.0 && ny >= 0.0 then RGB.ofNat 50 220 50
+  else if nx < 0.0 && ny < 0.0 then RGB.ofNat 50 50 220
+  else RGB.ofNat 220 220 50
 
 end Image
 end TetraGrayer

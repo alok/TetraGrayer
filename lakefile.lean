@@ -6,14 +6,16 @@ package «TetraGrayer» where
   leanOptions := #[
     ⟨`pp.unicode.fun, true⟩,
     ⟨`autoImplicit, true⟩,
-    ⟨`relaxedAutoImplicit, false⟩
+    ⟨`relaxedAutoImplicit, false⟩,
+    ⟨`linter.missingDocs, true⟩,
+    ⟨`doc.verso, true⟩
   ]
 
 @[default_target]
-lean_lib «TetraGrayer» where
-  globs := #[.submodules `TetraGrayer]
+lean_lib TetraGrayer where
+  globs := #[.andSubmodules `TetraGrayer]
 
-lean_exe «tetragrayer» where
+lean_exe tetragrayer where
   root := `Main
 
 /-- Run flat spacetime render and compare against upstream reference.

@@ -1,15 +1,12 @@
 import TetraGrayer.Basic
 import TetraGrayer.Core.Scalar
-import TetraGrayer.Core.Vector
 import TetraGrayer.Core.Clifford
 import TetraGrayer.Core.CoordSystems
 import TetraGrayer.Core.Particle
 import TetraGrayer.Camera
-import TetraGrayer.Integrator.RK4
 import TetraGrayer.Integrator.Generic
-import TetraGrayer.Termination
 import TetraGrayer.Image.PPM
 import TetraGrayer.Image.Colormap
-import TetraGrayer.Spacetimes.Flat
 import TetraGrayer.Spacetimes.Doran
+import TetraGrayer.Render.Parallel
 import TetraGrayer.Raytracer
