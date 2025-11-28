@@ -11,6 +11,10 @@ package «TetraGrayer» where
     ⟨`doc.verso, true⟩
   ]
 
+-- ProofWidgets disabled: version incompatibility with Lean 4.25
+-- require proofwidgets from git
+--   "https://github.com/leanprover-community/ProofWidgets4" @ "v0.0.52"
+
 @[default_target]
 lean_lib TetraGrayer where
   globs := #[.andSubmodules `TetraGrayer]

@@ -3,10 +3,14 @@ import TetraGrayer.Core.Scalar
 import TetraGrayer.Core.Clifford
 import TetraGrayer.Core.CoordSystems
 import TetraGrayer.Core.Particle
+import TetraGrayer.Core.RayResult
 import TetraGrayer.Camera
 import TetraGrayer.Integrator.Generic
+import TetraGrayer.Integrator.Monad
 import TetraGrayer.Image.PPM
 import TetraGrayer.Image.Colormap
+import TetraGrayer.Image.Colormap2
+import TetraGrayer.Image.Widget
 import TetraGrayer.Spacetimes.Doran
 import TetraGrayer.Render.Parallel
 import TetraGrayer.Raytracer
