@@ -67,7 +67,7 @@ def terminationColor : TerminationReason → RGB
 This version eliminates the boolean flag checking of the C++ version.
 The sum type makes all cases explicit.
 -/
-def sphericalColormapV2 (_escapeRadius : ℝ) (result : RayResult) : RGB :=
+def sphericalColormapV2 (_escapeRadius : ℝ) (result : ParticleResult) : RGB :=
   match result with
   | .propagating _ =>
     -- Still propagating shouldn't happen at coloring time, treat as absorbed
@@ -81,18 +81,18 @@ def sphericalColormapV2 (_escapeRadius : ℝ) (result : RayResult) : RGB :=
     | other => terminationColor other
 
 /-- Alternative: Point-free composition style for colormap. -/
-def mkColormap (escapeRadius : ℝ) : RayResult → RGB :=
+def mkColormap (escapeRadius : ℝ) : ParticleResult → RGB :=
   sphericalColormapV2 escapeRadius
 
 /-- Gradient colormap based on affine parameter (useful for debugging). -/
-def paramGradient (maxParam : ℝ) : RayResult → RGB := fun result =>
+def paramGradient (maxParam : ℝ) : ParticleResult → RGB := fun result =>
   let data := result.data
   let t := if data.param / maxParam > 1.0 then 1.0 else data.param / maxParam
   -- Blue to red gradient
   RGB.ofFloat t 0.0 (1.0 - t)
 
 /-- Colormap showing termination reasons with distinct colors. -/
-def debugColormap : RayResult → RGB := fun result =>
+def debugColormap : ParticleResult → RGB := fun result =>
   match result with
   | .propagating _ => RGB.ofNat 128 128 128  -- Gray for unexpected
   | .terminated _ reason =>

@@ -96,6 +96,45 @@ def orStop (p q : StopCondition) : StopCondition := fun d => p d || q d
 instance : OrOp StopCondition := ⟨orStop⟩
 
 -- ============================================================================
+-- Proposition-based predicates with Decidable instances
+-- ============================================================================
+
+/-- Proposition: particle has escaped beyond radius. -/
+def Escaped (radius : ℝ) (data : ODEData Particle) : Prop :=
+  (sphericalFromCartesian data.value.position).v1 ≥ radius
+
+/-- Decidable instance for Escaped. -/
+instance (radius : ℝ) (data : ODEData Particle) : Decidable (Escaped radius data) :=
+  if h : (sphericalFromCartesian data.value.position).v1 ≥ radius
+  then isTrue h
+  else isFalse h
+
+/-- Proposition: affine parameter exceeded. -/
+def ParamExceeded (maxParam : ℝ) (data : ODEData Particle) : Prop :=
+  data.param ≥ maxParam
+
+/-- Decidable instance for ParamExceeded. -/
+instance (maxParam : ℝ) (data : ODEData Particle) : Decidable (ParamExceeded maxParam data) :=
+  if h : data.param ≥ maxParam then isTrue h else isFalse h
+
+/-- Proposition: step ratio exceeded (blueshift). -/
+def StepRatioExceeded (maxRatio dparam0 : ℝ) (data : ODEData Particle) : Prop :=
+  dparam0 / data.dparam ≥ maxRatio
+
+/-- Decidable instance for StepRatioExceeded. -/
+instance (maxRatio dparam0 : ℝ) (data : ODEData Particle) : Decidable (StepRatioExceeded maxRatio dparam0 data) :=
+  if h : dparam0 / data.dparam ≥ maxRatio then isTrue h else isFalse h
+
+/-- Proposition: ray should terminate. -/
+def ShouldTerminate (escapeRadius maxParam maxRatio dparam0 : ℝ) (data : ODEData Particle) : Prop :=
+  Escaped escapeRadius data ∨ ParamExceeded maxParam data ∨ StepRatioExceeded maxRatio dparam0 data
+
+/-- Decidable instance for ShouldTerminate. -/
+instance (escapeRadius maxParam maxRatio dparam0 : ℝ) (data : ODEData Particle) :
+    Decidable (ShouldTerminate escapeRadius maxParam maxRatio dparam0 data) :=
+  instDecidableOr  -- Uses decidability of Or with decidable components
+
+-- ============================================================================
 -- Dynamic stepsize adjustment
 -- ============================================================================
 

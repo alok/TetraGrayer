@@ -108,7 +108,7 @@ def checkStopConditions : RayM Unit := do
   checkBlueshift
 
 /-- Run the monad with initial state. -/
-def run (cfg : RayConfig) (ode : ODEData Particle) (m : RayM α) : RayResult :=
+def run (cfg : RayConfig) (ode : ODEData Particle) (m : RayM α) : ParticleResult :=
   match m cfg |>.run (ode, 0) with
   | .ok (_, (finalOde, _)) => .propagating finalOde
   | .error reason =>
@@ -162,12 +162,12 @@ partial def integrateM (rhs : Particle → ℝ → ℝ → Particle) (maxSteps :
 
 /-- High-level integration API using the monad. -/
 def integrate (cfg : RayConfig) (rhs : Particle → ℝ → ℝ → Particle)
-    (maxSteps : Nat) (initial : ODEData Particle) : RayResult :=
+    (maxSteps : Nat) (initial : ODEData Particle) : ParticleResult :=
   RayM.run cfg initial (integrateM rhs maxSteps)
 
 /-- Simpler integration for flat spacetime using the monad (no blueshift adjustment). -/
 def integrateFlatM (escapeRadius maxParam : ℝ) (rhs : Particle → ℝ → Particle)
-    (maxSteps : Nat) (initial : ODEData Particle) : RayResult :=
+    (maxSteps : Nat) (initial : ODEData Particle) : ParticleResult :=
   let cfg : RayConfig := {
     escapeRadius := escapeRadius
     maxParam := maxParam

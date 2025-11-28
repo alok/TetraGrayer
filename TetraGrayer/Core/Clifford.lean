@@ -90,6 +90,34 @@ instance : HDiv CliffordVector ℝ CliffordVector := ⟨sdiv⟩
 instance : GetElem CliffordVector Nat ℝ (fun _ i => i < 4) where
   getElem v i _ := get v i
 
+/-- Convert to array for iteration. -/
+def toArray (v : CliffordVector) : Array ℝ := #[v.v0, v.v1, v.v2, v.v3]
+
+/-- ForIn instance: iterate over components with `for x in v do`. -/
+instance : ForIn m CliffordVector ℝ where
+  forIn v init f := do
+    let mut acc := init
+    for x in v.toArray do
+      match ← f x acc with
+      | .done a => return a
+      | .yield a => acc := a
+    return acc
+
+/-- Fold over all components. -/
+def fold (v : CliffordVector) (init : α) (f : α → ℝ → α) : α :=
+  f (f (f (f init v.v0) v.v1) v.v2) v.v3
+
+/-- Sum of all components. -/
+def sum (v : CliffordVector) : ℝ := v.v0 + v.v1 + v.v2 + v.v3
+
+/-- Maximum component value. -/
+def maxComponent (v : CliffordVector) : ℝ :=
+  max (max v.v0 v.v1) (max v.v2 v.v3)
+
+/-- Minimum component value. -/
+def minComponent (v : CliffordVector) : ℝ :=
+  min (min v.v0 v.v1) (min v.v2 v.v3)
+
 end CliffordVector
 
 namespace Bivector

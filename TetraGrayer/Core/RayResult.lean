@@ -30,43 +30,66 @@ inductive TerminationReason where
   | maxSteps
 deriving Repr, Inhabited
 
-/-- Ray tracing result: either still propagating or terminated.
+/-- Generic ray tracing result: either still propagating or terminated.
 
-This replaces the C++ pattern of returning a particle with flags.
+Parametric over the data type `α` to enable Functor instance.
 -/
-inductive RayResult where
+inductive RayResult (α : Type) where
   /-- Ray still propagating, can take more steps -/
-  | propagating (data : ODEData Particle)
+  | propagating (data : α)
   /-- Ray terminated with final state and reason -/
-  | terminated (data : ODEData Particle) (reason : TerminationReason)
+  | terminated (data : α) (reason : TerminationReason)
 deriving Repr
+
+/-- Specialized ray result for particle integration. -/
+abbrev ParticleResult := RayResult (ODEData Particle)
 
 namespace RayResult
 
-/-- Extract the particle data regardless of termination. -/
-def data : RayResult → ODEData Particle
+/-- Extract the data regardless of termination. -/
+def data : RayResult α → α
   | propagating d => d
   | terminated d _ => d
 
 /-- Check if ray has terminated. -/
-def isTerminated : RayResult → Bool
+def isTerminated : RayResult α → Bool
   | propagating _ => false
   | terminated _ _ => true
 
 /-- Check if ray escaped (for coloring). -/
-def didEscape : RayResult → Bool
+def didEscape : RayResult α → Bool
   | terminated _ (.escaped _) => true
   | _ => false
 
-/-- Map over the underlying data (functor-like). -/
-def map (f : ODEData Particle → ODEData Particle) : RayResult → RayResult
-  | propagating d => propagating (f d)
-  | terminated d r => terminated (f d) r
-
 /-- Get termination reason if terminated. -/
-def reason? : RayResult → Option TerminationReason
+def reason? : RayResult α → Option TerminationReason
   | propagating _ => none
   | terminated _ r => some r
+
+/-- Functor instance: map over the underlying data. -/
+instance : Functor RayResult where
+  map f
+    | propagating d => propagating (f d)
+    | terminated d r => terminated (f d) r
+
+/-- LawfulFunctor: map preserves identity. -/
+instance : LawfulFunctor RayResult where
+  map_const := rfl
+  id_map := fun x => by cases x <;> rfl
+  comp_map := fun f g x => by cases x <;> rfl
+
+/-- Apply a function only if propagating, otherwise keep terminated state. -/
+def andThen (result : RayResult α) (f : α → RayResult α) : RayResult α :=
+  match result with
+  | propagating d => f d
+  | terminated d r => terminated d r
+
+/-- Combine two results, short-circuiting on first termination. -/
+def combine (r1 r2 : RayResult α) (f : α → α → α) : RayResult α :=
+  match r1, r2 with
+  | propagating d1, propagating d2 => propagating (f d1 d2)
+  | terminated d r, _ => terminated d r
+  | _, terminated d r => terminated d r
 
 end RayResult
 
