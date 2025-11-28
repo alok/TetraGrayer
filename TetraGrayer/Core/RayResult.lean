@@ -78,11 +78,61 @@ instance : LawfulFunctor RayResult where
   id_map := fun x => by cases x <;> rfl
   comp_map := fun f g x => by cases x <;> rfl
 
-/-- Apply a function only if propagating, otherwise keep terminated state. -/
+/-- Pure: wrap a value as propagating (no termination). -/
+protected def pure (a : α) : RayResult α := propagating a
+
+/-- Seq: apply a wrapped function, preserving termination from either side.
+
+If either side is terminated, the result is terminated (first termination wins).
+-/
+protected def seq : RayResult (α → β) → (Unit → RayResult α) → RayResult β
+  | propagating f, a => f <$> a ()
+  | terminated f r, a =>
+    match a () with
+    | propagating x => terminated (f x) r
+    | terminated x _ => terminated (f x) r  -- preserve first termination
+
+/-- Applicative instance for RayResult.
+
+Termination is "contagious" - if any computation terminates, the result is terminated.
+-/
+instance : Applicative RayResult where
+  pure := RayResult.pure
+  seq := RayResult.seq
+
+/-- Bind: chain computations, propagating termination.
+
+Semantics:
+- If propagating, apply the function normally
+- If terminated, apply function but mark result as terminated (preserves termination)
+
+This allows monadic composition while tracking termination status.
+-/
+protected def bind : RayResult α → (α → RayResult β) → RayResult β
+  | propagating d, f => f d
+  | terminated d r, f =>
+    match f d with
+    | propagating d' => terminated d' r    -- preserve original termination
+    | terminated d' r' => terminated d' r' -- use newer termination reason
+
+/-- Monad instance for RayResult.
+
+Termination propagates through the chain - once terminated, subsequent
+computations still run but their results are marked as terminated.
+-/
+instance : Monad RayResult where
+  bind := RayResult.bind
+
+/-- Apply a function only if propagating, otherwise keep terminated state unchanged. -/
 def andThen (result : RayResult α) (f : α → RayResult α) : RayResult α :=
   match result with
   | propagating d => f d
   | terminated d r => terminated d r
+
+/-- Strict short-circuit bind: don't apply function if already terminated. -/
+def bindStrict : RayResult α → (α → RayResult β) → Option (RayResult β)
+  | propagating d, f => some (f d)
+  | terminated _ _, _ => none
 
 /-- Combine two results, short-circuiting on first termination. -/
 def combine (r1 r2 : RayResult α) (f : α → α → α) : RayResult α :=
@@ -90,6 +140,16 @@ def combine (r1 r2 : RayResult α) (f : α → α → α) : RayResult α :=
   | propagating d1, propagating d2 => propagating (f d1 d2)
   | terminated d r, _ => terminated d r
   | _, terminated d r => terminated d r
+
+/-- Lift an Option into RayResult with default value for None case. -/
+def ofOption (default : α) : Option α → RayResult α
+  | some a => propagating a
+  | none => terminated default .absorbed
+
+/-- Check if still propagating (not terminated). -/
+def isPropagating : RayResult α → Bool
+  | propagating _ => true
+  | terminated _ _ => false
 
 end RayResult
 
