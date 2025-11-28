@@ -100,20 +100,29 @@ instance : Applicative RayResult where
   pure := RayResult.pure
   seq := RayResult.seq
 
+/-- LawfulApplicative: applicative laws hold for RayResult. -/
+instance : LawfulApplicative RayResult where
+  seqLeft_eq := fun x y => by cases x <;> cases y <;> rfl
+  seqRight_eq := fun x y => by cases x <;> cases y <;> rfl
+  pure_seq := fun f x => by rfl
+  map_pure := fun f a => by rfl
+  seq_pure := fun x a => by cases x <;> rfl
+  seq_assoc := fun x g h => by cases x <;> cases g <;> cases h <;> rfl
+
 /-- Bind: chain computations, propagating termination.
 
 Semantics:
 - If propagating, apply the function normally
-- If terminated, apply function but mark result as terminated (preserves termination)
+- If terminated, apply function but preserve the original termination reason
 
-This allows monadic composition while tracking termination status.
+This allows monadic composition while tracking the first termination cause.
 -/
 protected def bind : RayResult α → (α → RayResult β) → RayResult β
   | propagating d, f => f d
   | terminated d r, f =>
     match f d with
-    | propagating d' => terminated d' r    -- preserve original termination
-    | terminated d' r' => terminated d' r' -- use newer termination reason
+    | propagating d' => terminated d' r  -- preserve original termination
+    | terminated d' _ => terminated d' r -- preserve original termination (ignore newer)
 
 /-- Monad instance for RayResult.
 
@@ -122,6 +131,37 @@ computations still run but their results are marked as terminated.
 -/
 instance : Monad RayResult where
   bind := RayResult.bind
+
+/-- LawfulMonad: monad laws hold for RayResult.
+
+The key laws are:
+- Left identity: pure a >>= f = f a
+- Right identity: m >>= pure = m
+- Associativity: (m >>= f) >>= g = m >>= (fun x => f x >>= g)
+-/
+instance : LawfulMonad RayResult where
+  bind_pure_comp := fun f x => by cases x <;> rfl
+  bind_map := fun f x => by cases f <;> cases x <;> rfl
+  pure_bind := fun a f => by rfl
+  bind_assoc := fun x f g => by
+    cases x with
+    | propagating d =>
+      cases f d with
+      | propagating d2 => rfl
+      | terminated d2 r2 => cases g d2 <;> rfl
+    | terminated d r =>
+      -- (terminated d r).bind f is always terminated with reason r
+      -- So both sides reduce to terminated _ r after g
+      cases hfd : f d with
+      | propagating d2 =>
+        show RayResult.bind (RayResult.bind (terminated d r) f) g =
+             RayResult.bind (terminated d r) (fun x => RayResult.bind (f x) g)
+        simp only [RayResult.bind, hfd]
+      | terminated d2 r2 =>
+        show RayResult.bind (RayResult.bind (terminated d r) f) g =
+             RayResult.bind (terminated d r) (fun x => RayResult.bind (f x) g)
+        simp only [RayResult.bind, hfd]
+        cases g d2 <;> rfl
 
 /-- Apply a function only if propagating, otherwise keep terminated state unchanged. -/
 def andThen (result : RayResult α) (f : α → RayResult α) : RayResult α :=
