@@ -11,8 +11,11 @@ open Core
 
 /-- RGB color with UInt8 components (0-255). -/
 structure RGB where
+  /-- Red channel (0-255). -/
   r : UInt8
+  /-- Green channel (0-255). -/
   g : UInt8
+  /-- Blue channel (0-255). -/
   b : UInt8
 deriving Repr, Inhabited, BEq
 
@@ -58,6 +61,7 @@ end RGB
 /-- Clamp Nat to 255 (for legacy compatibility). -/
 @[inline] def clamp255 (x : Nat) : Nat := if x > 255 then 255 else x
 
+/-- Write image to PPM file format. -/
 def writePPM (path : System.FilePath) (w h : Nat) (pix : Nat → Nat → RGB) : IO Unit := do
   let parent := path.parent
   match parent with

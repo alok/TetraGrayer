@@ -162,7 +162,7 @@ def ellisRHSSimple (data : Particle) (_ : ℝ) (a : ℝ) : Particle :=
   let y := pos.v2
   let z := pos.v3
   let rSq := x * x + y * y + z * z
-  let r := Float.sqrt rSq
+  let _r := Float.sqrt rSq  -- Used for debugging
 
   -- Position changes with momentum
   let posRHS := mom

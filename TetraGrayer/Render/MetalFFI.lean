@@ -19,9 +19,13 @@ open Core Image Shader
 
 /-- Image dimensions with proof that both are positive. -/
 structure Dims where
+  /-- Image width in pixels. -/
   width : Nat
+  /-- Image height in pixels. -/
   height : Nat
+  /-- Proof that width is positive. -/
   width_pos : 0 < width := by decide
+  /-- Proof that height is positive. -/
   height_pos : 0 < height := by decide
 deriving Repr
 
@@ -34,10 +38,13 @@ def pixels (d : Dims) : Nat := d.width * d.height
 def aspectRatio (d : Dims) : Float :=
   Float.ofNat d.width / Float.ofNat d.height
 
-/-- Standard resolutions. -/
+/-- Preview resolution (320x180). -/
 def preview : Dims := ⟨320, 180, by decide, by decide⟩
+/-- HD resolution (1280x720). -/
 def hd : Dims := ⟨1280, 720, by decide, by decide⟩
+/-- Full HD resolution (1920x1080). -/
 def fullHd : Dims := ⟨1920, 1080, by decide, by decide⟩
+/-- 4K UHD resolution (3840x2160). -/
 def uhd4k : Dims := ⟨3840, 2160, by decide, by decide⟩
 
 /-- Create custom dimensions (with runtime check). -/
@@ -133,9 +140,13 @@ end FOV
 
 /-- Camera position in spacetime coordinates (t, x, y, z). -/
 structure CameraPos where
+  /-- Time coordinate. -/
   t : Float := 0.0
+  /-- x coordinate (radial distance). -/
   x : Float := 30.0
+  /-- y coordinate. -/
   y : Float := 0.0
+  /-- z coordinate. -/
   z : Float := 0.0
 deriving Repr, Inhabited
 
@@ -203,8 +214,11 @@ end DoranConfig
 
 /-- Complete render configuration. -/
 structure RenderConfig where
+  /-- Image dimensions. -/
   dims : Dims
+  /-- Doran spacetime parameters. -/
   doran : DoranConfig
+  /-- Camera position in spacetime. -/
   camera : CameraPos := CameraPos.atDistance 30.0
 deriving Repr
 

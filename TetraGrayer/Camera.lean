@@ -77,9 +77,13 @@ Camera canonically points in -x direction:
 - up = +z (image height direction)
 - time = +t
 -/
+/-- Baseline time direction. -/
 def baselineTimeDir : CliffordVector := CliffordVector.mk4 1.0 0.0 0.0 0.0
+/-- Baseline outward direction (-x). -/
 def baselineOutDir : CliffordVector := CliffordVector.mk4 0.0 (-1.0) 0.0 0.0
+/-- Baseline left direction (+y). -/
 def baselineLeftDir : CliffordVector := CliffordVector.mk4 0.0 0.0 1.0 0.0
+/-- Baseline up direction (+z). -/
 def baselineUpDir : CliffordVector := CliffordVector.mk4 0.0 0.0 0.0 1.0
 
 /-- Compute initial particle data for a pixel.

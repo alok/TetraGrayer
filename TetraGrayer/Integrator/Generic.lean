@@ -23,11 +23,15 @@ open Core
 -- RK4 as a higher-order combinator
 -- ============================================================================
 
-/-- RK4 coefficients as a dependent type for documentation -/
+/-- RK4 coefficients as a dependent type for documentation. -/
 structure RK4Coeffs where
+  /-- Weight for k1 (default 1/6). -/
   c1 : ℝ := 1.0 / 6.0
+  /-- Weight for k2 (default 1/3). -/
   c2 : ℝ := 1.0 / 3.0
+  /-- Weight for k3 (default 1/3). -/
   c3 : ℝ := 1.0 / 3.0
+  /-- Weight for k4 (default 1/6). -/
   c4 : ℝ := 1.0 / 6.0
 
 /-- RK4 step for generic ODE: dy/dt = f(y, t).
@@ -326,19 +330,28 @@ Run with this to see if ODEData or Particle values are unexpectedly shared
 -- High-level integration interface
 -- ============================================================================
 
-/-- Integration configuration for flat spacetime -/
+/-- Integration configuration for flat spacetime. -/
 structure FlatConfig where
+  /-- Escape radius for ray termination. -/
   extractRadius : ℝ
+  /-- Maximum affine parameter value. -/
   maxParam : ℝ
+  /-- Maximum integration steps. -/
   maxSteps : Nat
 
-/-- Integration configuration for Doran (Kerr) spacetime -/
+/-- Integration configuration for Doran (Kerr) spacetime. -/
 structure DoranConfig where
+  /-- Kerr spin parameter (0 to 1). -/
   spinParam : ℝ
+  /-- Escape radius for ray termination. -/
   extractRadius : ℝ
+  /-- Maximum affine parameter value. -/
   maxParam : ℝ
+  /-- Maximum step ratio (blueshift cutoff). -/
   maxStepRatio : ℝ
+  /-- Maximum integration steps. -/
   maxSteps : Nat
+  /-- Initial step size. -/
   dparam0 : ℝ
 
 /-- Integrate in flat spacetime -/
@@ -422,7 +435,9 @@ def integrateParticleAdaptiveDebug (rhs : Particle → ℝ → ℝ → Particle)
   integrateAdaptiveDebug rhs extraParam dparam0 stop maxSteps ode0
 
 -- Legacy aliases
+/-- Legacy alias for escaped. -/
 def escapedRadius := escaped
+/-- Legacy stop condition for Doran integration. -/
 def shouldStopDoran (escapeRad maxParam maxStepRatio dparam0 : ℝ) : StopCondition :=
   escaped escapeRad ||| paramExceeded maxParam ||| stepRatioExceeded maxStepRatio dparam0
 

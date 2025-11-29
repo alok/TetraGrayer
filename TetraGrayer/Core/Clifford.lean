@@ -112,14 +112,14 @@ instance : HMul ℝ CliffordVector CliffordVector := ⟨smul⟩
 instance : HMul CliffordVector ℝ CliffordVector := ⟨fun v s => smul s v⟩
 instance : HDiv CliffordVector ℝ CliffordVector := ⟨sdiv⟩
 
-/-- Index into vector components with `v[i]` syntax. -/
+/-- Index into vector components with {lean}`v[i]` syntax. -/
 instance : GetElem CliffordVector Nat ℝ (fun _ i => i < 4) where
   getElem v i _ := get v i
 
 /-- Convert to array for iteration. -/
 def toArray (v : CliffordVector) : Array ℝ := #[v.v0, v.v1, v.v2, v.v3]
 
-/-- ForIn instance: iterate over components with `for x in v do`. -/
+/-- ForIn instance: iterate over components with {lean}`for x in v do`. -/
 instance : ForIn m CliffordVector ℝ where
   forIn v init f := do
     let mut acc := init
@@ -193,7 +193,7 @@ instance : SMul ℝ Bivector := ⟨smul⟩
 instance : HMul ℝ Bivector Bivector := ⟨smul⟩
 instance : HMul Bivector ℝ Bivector := ⟨fun b s => smul s b⟩
 
-/-- Index into bivector components with `b[i]` syntax. -/
+/-- Index into bivector components with {lean}`b[i]` syntax. -/
 instance : GetElem Bivector Nat ℝ (fun _ i => i < 6) where
   getElem b i _ := get b i
 
@@ -232,7 +232,7 @@ instance : Neg Trivector := ⟨neg⟩
 instance : SMul ℝ Trivector := ⟨smul⟩
 instance : HMul ℝ Trivector Trivector := ⟨smul⟩
 
-/-- Index into trivector components with `t[i]` syntax. -/
+/-- Index into trivector components with {lean}`t[i]` syntax. -/
 instance : GetElem Trivector Nat ℝ (fun _ i => i < 4) where
   getElem t i _ := get t i
 
@@ -301,7 +301,7 @@ def sdiv (e : Versor) (s : ℝ) : Versor := smul (1.0 / s) e
 instance : Sub Versor := ⟨sub⟩
 instance : HDiv Versor ℝ Versor := ⟨sdiv⟩
 
-/-- Index into versor components with `e[i]` syntax (scalar=0, bivec=1-6, pseudo=7). -/
+/-- Index into versor components with {lean}`e[i]` syntax (scalar=0, bivec=1-6, pseudo=7). -/
 instance : GetElem Versor Nat ℝ (fun _ i => i < 8) where
   getElem e i _ := get e i
 

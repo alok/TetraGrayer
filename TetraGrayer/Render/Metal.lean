@@ -23,18 +23,31 @@ open Core Image
 
 /-- Metal render parameters. -/
 structure MetalRenderParams where
+  /-- Image width in pixels. -/
   width : UInt32
+  /-- Image height in pixels. -/
   height : UInt32
+  /-- Kerr spin parameter (0 to 1). -/
   spinParam : Float
+  /-- Escape radius for ray termination. -/
   extractRadius : Float
+  /-- Maximum affine parameter. -/
   maxParam : Float
+  /-- Maximum step ratio (blueshift cutoff). -/
   maxStepRatio : Float
+  /-- Maximum integration steps. -/
   maxSteps : UInt32
+  /-- Initial step size. -/
   dparam0 : Float
+  /-- Camera position time coordinate. -/
   camPosT : Float
+  /-- Camera position x coordinate. -/
   camPosX : Float
+  /-- Camera position y coordinate. -/
   camPosY : Float
+  /-- Camera position z coordinate. -/
   camPosZ : Float
+  /-- Horizontal field of view in radians. -/
   hFov : Float
 
 -- ============================================================================
@@ -76,7 +89,7 @@ def MetalRenderer.init : IO (Option MetalRenderer) := do
 This spawns a helper process that loads the Metal library and renders.
 Avoids the complexity of dlopen/dlsym from Lean.
 -/
-def renderWithMetalHelper (params : MetalRenderParams) (outputPath : String) : IO Bool := do
+def renderWithMetalHelper (_params : MetalRenderParams) (_outputPath : String) : IO Bool := do
   -- For now, use a Python script as a bridge (easier to interface with Metal)
   -- In production, we'd use a proper helper binary
 

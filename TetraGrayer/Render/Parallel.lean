@@ -15,16 +15,23 @@ open Core Image
 
 /-- Render configuration. -/
 structure RenderConfig where
+  /-- Image width in pixels. -/
   width : Nat
+  /-- Image height in pixels. -/
   height : Nat
-  numChunks : Nat := 16  -- Number of parallel chunks (typically = CPU cores)
+  /-- Number of parallel chunks (typically equals CPU cores). -/
+  numChunks : Nat := 16
+  /-- Show progress during rendering. -/
   showProgress : Bool := true
 deriving Repr
 
 /-- A chunk of rows to render. -/
 structure Chunk where
+  /-- First row index (inclusive). -/
   startRow : Nat
-  endRow : Nat  -- exclusive
+  /-- Last row index (exclusive). -/
+  endRow : Nat
+  /-- Image width. -/
   width : Nat
 deriving Repr
 

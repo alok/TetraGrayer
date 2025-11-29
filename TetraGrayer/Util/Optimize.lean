@@ -32,7 +32,7 @@ def elabConvRewrite (e : Expr) (stx : TSyntax `conv) : TermElabM (Expr × Expr) 
 
   return (← instantiateMVars rhs, ← instantiateMVars eq)
 
-/-- Rewrite a term using conv tactics: `expr rewrite_by conv_tactic` -/
+/-- Rewrite a term using conv tactics: {lean}`expr rewrite_by conv_tactic` -/
 syntax:1 term "rewrite_by" convSeq : term
 
 elab_rules : term
@@ -45,7 +45,7 @@ elab_rules : term
 /-- Create an optimized version of a definition and register it with csimp.
 
 Usage:
-```
+```lean
 def myFn (x : Nat) := x + 0
 
 def_optimize myFn by simp
