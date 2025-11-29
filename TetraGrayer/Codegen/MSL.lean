@@ -256,10 +256,32 @@ def inferMSLType (ty : Expr) : MetaM String := do
   | .app (.const name _) _ => return leanTypeToMSL name
   | _ => return "float"  -- Default fallback
 
-/-- Translate a Lean expression to MSL. -/
+mutual
+/-- Translate a Lean expression to MSL. Preserves let bindings. -/
 partial def exprToMSL (e : Expr) : MSLM String := do
-  let e ← whnf e
+  -- Handle let bindings BEFORE whnf (whnf would reduce them away)
+  match e with
+  | .letE name ty val body _ =>
+    let varName ← freshVar name.toString
+    let tyStr ← inferMSLType ty
+    let valStr ← exprToMSL val
+    let indent ← getIndent
+    addStatement s!"{indent}{tyStr} {varName} = {valStr};"
+    withLetDecl name ty val fun fvar => do
+      registerFVar fvar.fvarId! varName
+      let bodyExpr := body.instantiate1 fvar
+      exprToMSL bodyExpr
+  | .mdata _ inner => exprToMSL inner
+  | .lam _ _ _ _ =>
+    -- Lambda might contain let bindings, so don't reduce with whnf
+    exprToMSLReduced e
+  | _ =>
+    -- For other expressions, use whnf to reduce typeclass applications
+    let e ← whnf e
+    exprToMSLReduced e
 
+/-- Translate a whnf-reduced expression to MSL. -/
+partial def exprToMSLReduced (e : Expr) : MSLM String := do
   -- Try binary operator
   if let some (op, a, b) := asBinaryOp e then
     let aStr ← exprToMSL a
@@ -317,7 +339,7 @@ partial def exprToMSL (e : Expr) : MSLM String := do
       let bodyExpr := body.instantiate1 fvar
       exprToMSL bodyExpr
 
-  -- Let binding - emit as statement
+  -- Let binding (shouldn't normally reach here after exprToMSL, but handle for safety)
   | .letE name ty val body _ =>
     let varName ← freshVar name.toString
     let tyStr ← inferMSLType ty
@@ -364,6 +386,7 @@ partial def exprToMSL (e : Expr) : MSLM String := do
   -- Sort/ForallE (type-level, shouldn't appear in values)
   | .sort _ => return "/* type */"
   | .forallE _ _ _ _ => return "/* forall */"
+end
 
 -- ============================================================================
 -- Struct Extraction

@@ -139,13 +139,26 @@ def complexExpr (x y z : Float) : Float :=
 -- Test Bivector.smul
 #check_msl TetraGrayer.Core.Bivector.smul
 
+-- Test wedge product (produces a Bivector from two vectors)
+#check_msl TetraGrayer.Core.vectorWedge
+
+-- Test bivector dot vector contraction
+#check_msl TetraGrayer.Core.bivectorDotVector
+
 -- ============================================================================
 -- File Emission Test
 -- ============================================================================
 
--- Generate test output file
+-- Generate test output file with Clifford algebra operations
 #emit_msl "artifacts/generated_test.metal"
   [TetraGrayer.Core.CliffordVector, TetraGrayer.Core.Bivector, TetraGrayer.Core.Particle]
-  [TetraGrayer.Codegen.Test.vecAddComponents, TetraGrayer.Codegen.Test.minkowskiDot, TetraGrayer.Codegen.Test.vecScale, TetraGrayer.Codegen.Test.updatePosition]
+  [TetraGrayer.Core.CliffordVector.add,
+   TetraGrayer.Core.CliffordVector.smul,
+   TetraGrayer.Core.Bivector.add,
+   TetraGrayer.Core.Bivector.smul,
+   TetraGrayer.Core.vectorWedge,
+   TetraGrayer.Core.bivectorDotVector,
+   TetraGrayer.Codegen.Test.minkowskiDot,
+   TetraGrayer.Codegen.Test.updatePosition]
 
 end TetraGrayer.Codegen.Test
