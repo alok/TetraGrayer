@@ -2,6 +2,7 @@ import TetraGrayer.Camera
 import TetraGrayer.Raytracer
 import TetraGrayer.Core.Clifford
 import TetraGrayer.Render.Metal
+import TetraGrayer.Render.MetalFFI
 
 open TetraGrayer
 open Core Render
@@ -37,6 +38,54 @@ def renderMetalFull : IO Unit := do
     0.05            -- dparam0
     camPos
     (π / 2.0)       -- hFov
+
+/-- Render using idiomatic Metal FFI with dependent types. -/
+def renderMetalIdiomatic : IO Unit := do
+  IO.println "  Using idiomatic Lean FFI with dependent types..."
+  IO.println s!"  Metal available: {Metal.isAvailable}"
+
+  if !Metal.isAvailable then
+    IO.eprintln "  Metal GPU not available on this system"
+    return
+
+  -- Configure with dependent types (spin and FOV are now constrained)
+  let config : Metal.RenderConfig := {
+    dims := Metal.Dims.hd  -- Statically 1280x720 with proof of positivity
+    doran := { Metal.DoranConfig.moderate with  -- spin = 0.5 (proven ∈ [0,1])
+      fov := Metal.FOV.wide  -- 90° (proven ∈ (0,π))
+      extractRadius := 50.0
+      maxParam := 500.0
+      maxStepRatio := 40.0
+      maxSteps := 100000
+      dparam0 := 0.05
+    }
+    camera := { Metal.CameraPos.atDistance 20.0 with t := 0.0 }
+  }
+
+  IO.println s!"  Resolution: {config.dims.width}x{config.dims.height}"
+  IO.println s!"  Total pixels: {config.dims.pixels}"
+  IO.println s!"  Spin parameter: {config.doran.spin.val} (proven 0 ≤ a ≤ 1)"
+  IO.println s!"  FOV: {config.doran.fov.val} rad (proven 0 < fov < π)"
+
+  -- Render with full type safety
+  let start ← IO.monoNanosNow
+  let result ← Metal.render config
+  let elapsed ← IO.monoNanosNow
+  let duration := (elapsed - start).toFloat / 1e9
+
+  match result with
+  | .ok img =>
+    -- img.data.size = 4 * img.dims.pixels is proven at type level!
+    IO.println s!"  Rendered in {duration} s"
+    IO.println s!"  Image buffer: {img.data.size} bytes (verified: 4 * {img.dims.pixels})"
+    img.writePPM "artifacts/doran-metal-ffi.ppm"
+    IO.println "  Output: artifacts/doran-metal-ffi.ppm"
+  | .unavailable =>
+    IO.eprintln "  Metal unavailable"
+  | .initFailed code =>
+    IO.eprintln s!"  Metal init failed with code {code}"
+  | .renderFailed code =>
+    IO.eprintln s!"  Metal render failed with code {code}"
 
 /-- Benchmark comparing standard vs fused RK4 -/
 def benchmarkFusion : IO Unit := do
@@ -121,6 +170,11 @@ def main (args : List String) : IO Unit := do
     -- Render using Metal GPU
     IO.println "\nRendering on Metal GPU (1280x720)..."
     renderMetalFull
+
+  | "metal-ffi" =>
+    -- Render using idiomatic Metal FFI with dependent types
+    IO.println "\nRendering on Metal GPU with idiomatic Lean FFI..."
+    renderMetalIdiomatic
 
   | "debug" =>
     -- Check for unexpected sharing in integration loop
