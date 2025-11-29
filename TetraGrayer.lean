@@ -1,4 +1,3 @@
-import TetraGrayer.Basic
 import TetraGrayer.Core.Scalar
 import TetraGrayer.Core.Clifford
 import TetraGrayer.Core.CoordSystems

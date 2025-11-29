@@ -15,46 +15,66 @@ import TetraGrayer.Core.Scalar
 namespace TetraGrayer
 namespace Core
 
-/-- 4-vector in spacetime. -/
+/-- 4-vector in spacetime with signature (-,+,+,+). -/
 @[unbox]
 structure CliffordVector where
-  v0 : ℝ  -- time component
-  v1 : ℝ  -- x
-  v2 : ℝ  -- y
-  v3 : ℝ  -- z
+  /-- Time component (e₀). -/
+  v0 : ℝ
+  /-- Spatial x component (e₁). -/
+  v1 : ℝ
+  /-- Spatial y component (e₂). -/
+  v2 : ℝ
+  /-- Spatial z component (e₃). -/
+  v3 : ℝ
 deriving Repr, Inhabited
 
-/-- 6 independent bivector components. -/
+/-- 6 independent bivector components in ascending bit order. -/
 structure Bivector where
-  b01 : ℝ  -- e₀∧e₁
-  b02 : ℝ  -- e₀∧e₂
-  b12 : ℝ  -- e₁∧e₂
-  b03 : ℝ  -- e₀∧e₃
-  b13 : ℝ  -- e₁∧e₃
-  b23 : ℝ  -- e₂∧e₃
+  /-- e₀∧e₁ component. -/
+  b01 : ℝ
+  /-- e₀∧e₂ component. -/
+  b02 : ℝ
+  /-- e₁∧e₂ component. -/
+  b12 : ℝ
+  /-- e₀∧e₃ component. -/
+  b03 : ℝ
+  /-- e₁∧e₃ component. -/
+  b13 : ℝ
+  /-- e₂∧e₃ component. -/
+  b23 : ℝ
 deriving Repr, Inhabited
 
 /-- 4 trivector components. -/
 structure Trivector where
-  t012 : ℝ  -- e₀∧e₁∧e₂
-  t013 : ℝ  -- e₀∧e₁∧e₃
-  t023 : ℝ  -- e₀∧e₂∧e₃
-  t123 : ℝ  -- e₁∧e₂∧e₃
+  /-- e₀∧e₁∧e₂ component. -/
+  t012 : ℝ
+  /-- e₀∧e₁∧e₃ component. -/
+  t013 : ℝ
+  /-- e₀∧e₂∧e₃ component. -/
+  t023 : ℝ
+  /-- e₁∧e₂∧e₃ component. -/
+  t123 : ℝ
 deriving Repr, Inhabited
 
 /-- Even-graded multivector (scalar + bivector + pseudoscalar). -/
 structure Versor where
-  scalar : ℝ           -- grade 0
-  bivec  : Bivector    -- grade 2
-  pseudo : ℝ           -- grade 4 (pseudoscalar)
+  /-- Scalar (grade 0) component. -/
+  scalar : ℝ
+  /-- Bivector (grade 2) components. -/
+  bivec : Bivector
+  /-- Pseudoscalar (grade 4) component. -/
+  pseudo : ℝ
 deriving Repr, Inhabited
 
 namespace CliffordVector
 
+/-- Zero vector. -/
 @[inline] def zero : CliffordVector := ⟨0, 0, 0, 0⟩
 
+/-- Construct vector from 4 components. -/
 @[inline] def mk4 (a b c d : ℝ) : CliffordVector := ⟨a, b, c, d⟩
 
+/-- Get component by index (0-3). -/
 @[inline] def get (v : CliffordVector) (i : Nat) : ℝ :=
   match i with
   | 0 => v.v0
@@ -63,18 +83,23 @@ namespace CliffordVector
   | 3 => v.v3
   | _ => 0.0
 
+/-- Component-wise addition. -/
 @[inline] def add (a b : CliffordVector) : CliffordVector :=
   { v0 := a.v0 + b.v0, v1 := a.v1 + b.v1, v2 := a.v2 + b.v2, v3 := a.v3 + b.v3 }
 
+/-- Component-wise subtraction. -/
 @[inline] def sub (a b : CliffordVector) : CliffordVector :=
   { v0 := a.v0 - b.v0, v1 := a.v1 - b.v1, v2 := a.v2 - b.v2, v3 := a.v3 - b.v3 }
 
+/-- Scalar multiplication. -/
 @[inline] def smul (s : ℝ) (v : CliffordVector) : CliffordVector :=
   { v0 := s * v.v0, v1 := s * v.v1, v2 := s * v.v2, v3 := s * v.v3 }
 
+/-- Negation. -/
 @[inline] def neg (v : CliffordVector) : CliffordVector :=
   { v0 := -v.v0, v1 := -v.v1, v2 := -v.v2, v3 := -v.v3 }
 
+/-- Scalar division. -/
 @[inline] def sdiv (v : CliffordVector) (s : ℝ) : CliffordVector :=
   smul (1.0 / s) v
 
@@ -123,10 +148,13 @@ end CliffordVector
 
 namespace Bivector
 
+/-- Zero bivector. -/
 @[inline] def zero : Bivector := ⟨0, 0, 0, 0, 0, 0⟩
 
+/-- Construct bivector from 6 components. -/
 @[inline] def mk6 (a b c d e f : ℝ) : Bivector := ⟨a, b, c, d, e, f⟩
 
+/-- Get component by index (0-5). -/
 @[inline] def get (b : Bivector) (i : Nat) : ℝ :=
   match i with
   | 0 => b.b01
@@ -137,18 +165,22 @@ namespace Bivector
   | 5 => b.b23
   | _ => 0.0
 
+/-- Component-wise addition. -/
 @[inline] def add (a b : Bivector) : Bivector :=
   { b01 := a.b01 + b.b01, b02 := a.b02 + b.b02, b12 := a.b12 + b.b12
   , b03 := a.b03 + b.b03, b13 := a.b13 + b.b13, b23 := a.b23 + b.b23 }
 
+/-- Component-wise subtraction. -/
 @[inline] def sub (a b : Bivector) : Bivector :=
   { b01 := a.b01 - b.b01, b02 := a.b02 - b.b02, b12 := a.b12 - b.b12
   , b03 := a.b03 - b.b03, b13 := a.b13 - b.b13, b23 := a.b23 - b.b23 }
 
+/-- Scalar multiplication. -/
 @[inline] def smul (s : ℝ) (b : Bivector) : Bivector :=
   { b01 := s * b.b01, b02 := s * b.b02, b12 := s * b.b12
   , b03 := s * b.b03, b13 := s * b.b13, b23 := s * b.b23 }
 
+/-- Negation. -/
 @[inline] def neg (b : Bivector) : Bivector :=
   { b01 := -b.b01, b02 := -b.b02, b12 := -b.b12
   , b03 := -b.b03, b13 := -b.b13, b23 := -b.b23 }
@@ -169,8 +201,10 @@ end Bivector
 
 namespace Trivector
 
+/-- Zero trivector. -/
 def zero : Trivector := ⟨0, 0, 0, 0⟩
 
+/-- Get component by index (0-3). -/
 def get (t : Trivector) (i : Nat) : ℝ :=
   match i with
   | 0 => t.t012
@@ -179,13 +213,16 @@ def get (t : Trivector) (i : Nat) : ℝ :=
   | 3 => t.t123
   | _ => 0.0
 
+/-- Component-wise addition. -/
 def add (a b : Trivector) : Trivector :=
   { t012 := a.t012 + b.t012, t013 := a.t013 + b.t013
   , t023 := a.t023 + b.t023, t123 := a.t123 + b.t123 }
 
+/-- Negation. -/
 def neg (t : Trivector) : Trivector :=
   { t012 := -t.t012, t013 := -t.t013, t023 := -t.t023, t123 := -t.t123 }
 
+/-- Scalar multiplication. -/
 def smul (s : ℝ) (t : Trivector) : Trivector :=
   { t012 := s * t.t012, t013 := s * t.t013, t023 := s * t.t023, t123 := s * t.t123 }
 
@@ -203,16 +240,22 @@ end Trivector
 
 namespace Versor
 
+/-- Identity versor. -/
 def one : Versor := ⟨1, Bivector.zero, 0⟩
 
+/-- Zero versor. -/
 def zero : Versor := ⟨0, Bivector.zero, 0⟩
 
+/-- Versor from scalar only. -/
 def ofScalar (s : ℝ) : Versor := ⟨s, Bivector.zero, 0⟩
 
+/-- Versor from bivector only. -/
 def ofBivector (b : Bivector) : Versor := ⟨0, b, 0⟩
 
+/-- Versor from pseudoscalar only. -/
 def mkPseudo (p : ℝ) : Versor := ⟨0, Bivector.zero, p⟩
 
+/-- Get component by index (0=scalar, 1-6=bivector, 7=pseudoscalar). -/
 def get (e : Versor) (i : Nat) : ℝ :=
   match i with
   | 0 => e.scalar
@@ -225,16 +268,19 @@ def get (e : Versor) (i : Nat) : ℝ :=
   | 7 => e.pseudo
   | _ => 0.0
 
+/-- Component-wise addition. -/
 def add (a b : Versor) : Versor :=
   { scalar := a.scalar + b.scalar
   , bivec := a.bivec + b.bivec
   , pseudo := a.pseudo + b.pseudo }
 
+/-- Scalar multiplication. -/
 def smul (s : ℝ) (e : Versor) : Versor :=
   { scalar := s * e.scalar
   , bivec := s • e.bivec
   , pseudo := s * e.pseudo }
 
+/-- Negation. -/
 def neg (e : Versor) : Versor :=
   { scalar := -e.scalar, bivec := -e.bivec, pseudo := -e.pseudo }
 
@@ -246,8 +292,10 @@ instance : SMul ℝ Versor := ⟨smul⟩
 instance : HMul ℝ Versor Versor := ⟨smul⟩
 instance : HMul Versor ℝ Versor := ⟨fun e s => smul s e⟩
 
+/-- Component-wise subtraction. -/
 def sub (a b : Versor) : Versor := a + (-b)
 
+/-- Scalar division. -/
 def sdiv (e : Versor) (s : ℝ) : Versor := smul (1.0 / s) e
 
 instance : Sub Versor := ⟨sub⟩
