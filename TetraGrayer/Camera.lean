@@ -69,15 +69,14 @@ def atDistance (d : ℝ) (w h : Nat) : CameraParams :=
 
 end CameraParams
 
-/-- Baseline direction vectors for the camera.
+/-- Baseline time direction.
 
-Camera canonically points in -x direction:
-- out = -x (forward)
+Baseline direction vectors for the camera:
+- out = -x (forward direction)
 - left = +y (image width direction)
 - up = +z (image height direction)
 - time = +t
 -/
-/-- Baseline time direction. -/
 def baselineTimeDir : CliffordVector := CliffordVector.mk4 1.0 0.0 0.0 0.0
 /-- Baseline outward direction (-x). -/
 def baselineOutDir : CliffordVector := CliffordVector.mk4 0.0 (-1.0) 0.0 0.0

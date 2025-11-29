@@ -32,7 +32,7 @@ def elabConvRewrite (e : Expr) (stx : TSyntax `conv) : TermElabM (Expr × Expr) 
 
   return (← instantiateMVars rhs, ← instantiateMVars eq)
 
-/-- Rewrite a term using conv tactics: {lean}`expr rewrite_by conv_tactic` -/
+/-- Rewrite a term using conv tactics: `expr rewrite_by conv_tactic` -/
 syntax:1 term "rewrite_by" convSeq : term
 
 elab_rules : term
@@ -44,14 +44,8 @@ elab_rules : term
 
 /-- Create an optimized version of a definition and register it with csimp.
 
-Usage:
-```lean
-def myFn (x : Nat) := x + 0
-
-def_optimize myFn by simp
--- Creates myFn.optimized with body `x`
--- Registers csimp rule: myFn = myFn.optimized
-```
+Usage: `def_optimize myFn by simp` creates `myFn.optimized` with simplified body
+and registers a csimp rule: `myFn = myFn.optimized`.
 -/
 elab "def_optimize" f:ident "by " t:convSeq : command => do
   let info ← Lean.getConstInfoDefn f.getId
