@@ -5,12 +5,13 @@
 import TetraGrayer.Core.Scalar
 import TetraGrayer.Core.Clifford
 import TetraGrayer.Image.PPM
+import TetraGrayer.Render.ShaderUniforms
 
 namespace TetraGrayer
 namespace Render
 namespace Metal
 
-open Core Image
+open Core Image Shader
 
 -- ============================================================================
 -- Dependent Types for Image Dimensions
@@ -221,6 +222,42 @@ def preview (d : DoranConfig) : RenderConfig :=
 def standard : RenderConfig :=
   { dims := Dims.fullHd, doran := DoranConfig.moderate }
 
+/-- Convert to type-safe shader uniform buffer.
+    The returned buffer has verified size matching GPU layout.
+-/
+def toUniformBuffer (c : RenderConfig) : Option MetalParams :=
+  MetalParams.create?
+    c.dims.width.toUInt32
+    c.dims.height.toUInt32
+    c.doran.spinParam
+    c.doran.extractRadius
+    c.doran.maxParam
+    c.doran.maxStepRatio
+    c.doran.maxSteps.toUInt32
+    c.doran.dparam0
+    c.camera.t
+    c.camera.x
+    c.camera.y
+    c.camera.z
+    c.doran.hFov
+
+/-- Convert to uniform buffer (panics on size mismatch, should not happen). -/
+def toUniformBuffer! (c : RenderConfig) : MetalParams :=
+  MetalParams.create!
+    c.dims.width.toUInt32
+    c.dims.height.toUInt32
+    c.doran.spinParam
+    c.doran.extractRadius
+    c.doran.maxParam
+    c.doran.maxStepRatio
+    c.doran.maxSteps.toUInt32
+    c.doran.dparam0
+    c.camera.t
+    c.camera.x
+    c.camera.y
+    c.camera.z
+    c.doran.hFov
+
 end RenderConfig
 
 -- ============================================================================
@@ -340,7 +377,7 @@ def toRGBArray (img : MetalImage) : Array RGB := Id.run do
 
 /-- Convert RGBA image to RGB ByteArray (drops alpha channel). -/
 def toRGBBytes (img : MetalImage) : ByteArray := Id.run do
-  let mut bytes := ByteArray.mkEmpty (img.dims.pixels * 3)
+  let mut bytes := ByteArray.emptyWithCapacity (img.dims.pixels * 3)
   for i in [:img.dims.pixels] do
     let idx := i * 4
     bytes := bytes.push (img.data.get! idx)      -- R
@@ -365,9 +402,13 @@ end MetalImage
 
 /-- Metal operation result. -/
 inductive Result (α : Type) where
+  /-- Operation succeeded with value. -/
   | ok : α → Result α
+  /-- Metal GPU not available on this system. -/
   | unavailable : Result α
+  /-- Metal initialization failed with error code. -/
   | initFailed : Int → Result α
+  /-- Metal render failed with error code. -/
   | renderFailed : Int → Result α
 deriving Repr
 
