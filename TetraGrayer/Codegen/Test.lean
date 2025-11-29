@@ -7,6 +7,7 @@ This file tests the #msl_struct and #check_msl commands.
 import TetraGrayer.Codegen.MSL
 import TetraGrayer.Core.Clifford
 import TetraGrayer.Core.Particle
+import TetraGrayer.Spacetimes.Doran
 
 set_option linter.missingDocs false
 
@@ -124,6 +125,20 @@ def complexExpr (x y z : Float) : Float :=
 #check_msl TetraGrayer.Codegen.Test.complexExpr
 
 -- ============================================================================
+-- Conditional Tests
+-- ============================================================================
+
+-- Basic conditional (absolute value)
+def testAbs (x : Float) : Float :=
+  if x < 0 then -x else x
+#check_msl TetraGrayer.Codegen.Test.testAbs
+
+-- Conditional with comparison
+def testClamp (x lo hi : Float) : Float :=
+  if x < lo then lo else if x > hi then hi else x
+#check_msl TetraGrayer.Codegen.Test.testClamp
+
+-- ============================================================================
 -- Actual Clifford Operations from Core
 -- ============================================================================
 
@@ -146,6 +161,19 @@ def complexExpr (x y z : Float) : Float :=
 #check_msl TetraGrayer.Core.bivectorDotVector
 
 -- ============================================================================
+-- Doran Helper Tests
+-- ============================================================================
+
+-- Test doranBeta (simple single-expression function)
+#check_msl TetraGrayer.Spacetimes.doranBeta
+
+-- Test flatRHS (simpler RHS function)
+#check_msl TetraGrayer.Spacetimes.flatRHS
+
+-- Test full doranRHS (complex with many let bindings and helper calls)
+#check_msl TetraGrayer.Spacetimes.doranRHS
+
+-- ============================================================================
 -- File Emission Test
 -- ============================================================================
 
@@ -160,5 +188,13 @@ def complexExpr (x y z : Float) : Float :=
    TetraGrayer.Core.bivectorDotVector,
    TetraGrayer.Codegen.Test.minkowskiDot,
    TetraGrayer.Codegen.Test.updatePosition]
+
+-- ============================================================================
+-- Complete Raytracer Shader Emission
+-- ============================================================================
+
+-- Generate the complete Metal raytracer kernel shader
+-- This is a self-contained shader with all required functions inlined
+#emit_raytracer_msl "artifacts/raytracer.metal"
 
 end TetraGrayer.Codegen.Test
