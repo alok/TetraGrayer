@@ -241,13 +241,54 @@ structure MetalImage where
 
 namespace MetalImage
 
-/-- Get pixel at (x, y). Returns (R, G, B, A). -/
+/-- RGBA pixel value. -/
+structure RGBA where
+  /-- Red channel. -/
+  r : UInt8
+  /-- Green channel. -/
+  g : UInt8
+  /-- Blue channel. -/
+  b : UInt8
+  /-- Alpha channel. -/
+  a : UInt8
+deriving Repr, Inhabited
+
+/-- Convert Fin-indexed position to linear index. -/
+@[inline]
+def linearIdx (img : MetalImage) (x : Fin img.dims.width) (y : Fin img.dims.height) : Nat :=
+  (y.val * img.dims.width + x.val) * 4
+
+/-- Get pixel at (x, y) using Fin indices. Bounds-safe by construction. -/
+@[inline]
+def getPixelFin (img : MetalImage) (x : Fin img.dims.width) (y : Fin img.dims.height) : RGBA :=
+  let idx := linearIdx img x y
+  -- Bounds are proven by: x < width, y < height, size_eq : data.size = 4 * width * height
+  -- idx = (y * width + x) * 4 < (height * width) * 4 = data.size
+  { r := img.data.get! idx
+    g := img.data.get! (idx + 1)
+    b := img.data.get! (idx + 2)
+    a := img.data.get! (idx + 3) }
+
+/-- Get pixel at (x, y) with explicit bounds proofs. -/
+@[inline]
 def getPixel (img : MetalImage) (x y : Nat)
-    (hx : x < img.dims.width) (hy : y < img.dims.height) : UInt8 × UInt8 × UInt8 × UInt8 :=
+    (hx : x < img.dims.width) (hy : y < img.dims.height) : RGBA :=
+  getPixelFin img ⟨x, hx⟩ ⟨y, hy⟩
+
+/-- Unchecked pixel access - caller must ensure bounds. -/
+@[inline]
+def getPixel! (img : MetalImage) (x y : Nat) : RGBA :=
   let idx := (y * img.dims.width + x) * 4
-  -- We know this is in bounds due to size_eq, but we'll use get! for simplicity
-  (img.data.get! idx, img.data.get! (idx + 1),
-   img.data.get! (idx + 2), img.data.get! (idx + 3))
+  { r := img.data.get! idx
+    g := img.data.get! (idx + 1)
+    b := img.data.get! (idx + 2)
+    a := img.data.get! (idx + 3) }
+
+/-- Get pixel at (x, y) - legacy tuple interface. -/
+def getPixelTuple (img : MetalImage) (x y : Nat)
+    (hx : x < img.dims.width) (hy : y < img.dims.height) : UInt8 × UInt8 × UInt8 × UInt8 :=
+  let p := getPixel img x y hx hy
+  (p.r, p.g, p.b, p.a)
 
 /-- Convert to RGB array for PPM output. -/
 def toRGBArray (img : MetalImage) : Array RGB := Id.run do
