@@ -1,9 +1,10 @@
 import TetraGrayer.Camera
 import TetraGrayer.Raytracer
 import TetraGrayer.Core.Clifford
+import TetraGrayer.Render.Metal
 
 open TetraGrayer
-open Core
+open Core Render
 
 /-- Render full-resolution flat spacetime image matching upstream flat.cu -/
 def renderFlatFull : IO Unit := do
@@ -22,6 +23,20 @@ def renderDoranFull : IO Unit := do
     dparam := 0.05 }
   let params := DoranParams.mk 0.5 50.0 500.0 40.0 100000
   renderDoran "artifacts/doran-full.ppm" cam params 720  -- One chunk per row for maximum load balancing
+
+/-- Render using Metal GPU for maximum performance. -/
+def renderMetalFull : IO Unit := do
+  let camPos := CliffordVector.mk4 0.0 20.0 0.0 0.0
+  Render.renderDoranMetal "artifacts/doran-metal.ppm"
+    1280 720        -- width, height
+    0.5             -- spinParam
+    50.0            -- extractRadius
+    500.0           -- maxParam
+    40.0            -- maxStepRatio
+    100000          -- maxSteps
+    0.05            -- dparam0
+    camPos
+    (π / 2.0)       -- hFov
 
 /-- Benchmark comparing standard vs fused RK4 -/
 def benchmarkFusion : IO Unit := do
@@ -101,6 +116,11 @@ def main (args : List String) : IO Unit := do
   | "bench" =>
     -- A/B benchmark for loop fusion
     benchmarkFusion
+
+  | "metal" =>
+    -- Render using Metal GPU
+    IO.println "\nRendering on Metal GPU (1280x720)..."
+    renderMetalFull
 
   | "debug" =>
     -- Check for unexpected sharing in integration loop

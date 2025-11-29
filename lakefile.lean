@@ -17,6 +17,9 @@ package «TetraGrayer» where
   -- -march=native enables CPU-specific optimizations (AVX, etc.)
   -- -flto enables link-time optimization for cross-module inlining
   moreLeancArgs := #["-O3", "-ffast-math", "-march=native", "-funroll-loops"]
+  -- Link with Metal and Foundation frameworks for GPU acceleration
+  -- Use system sysroot for frameworks, but it conflicts with Lean's sysroot
+  -- So we build Metal as a separate dylib and load it dynamically
   moreLinkArgs := #["-O3", "-ffast-math", "-march=native", "-flto"]
 
 -- ProofWidgets disabled: version incompatibility with Lean 4.25
@@ -29,6 +32,9 @@ target ffi.o pkg : FilePath := do
   let srcJob ← inputTextFile <| pkg.dir / "ffi" / "trig.c"
   let weakArgs := #["-I", (← getLeanIncludeDir).toString, "-O3", "-ffast-math"]
   buildO oFile srcJob weakArgs #["-fPIC"] "cc" getLeanTrace
+
+-- Note: Metal library is built separately via `make -C ffi/metal`
+-- because Lean's sysroot conflicts with macOS framework linking
 
 extern_lib libleanffi pkg := do
   let ffiO ← ffi.o.fetch
