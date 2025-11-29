@@ -353,51 +353,81 @@ kernel void raytrace_kernel(
 
     uint pixelIdx = y * params.width + x;
 
-    // Generate ray direction based on pixel coordinates
-    float aspectRatio = float(params.width) / float(params.height);
-    float fovScale = tan(params.hFov * 0.5);
+    // Match CPU camera model (Camera.lean):
+    // Angular step per pixel: da = hFov / width
+    float da = params.hFov / float(params.width);
 
-    // Normalized device coordinates (-1 to 1)
-    float ndcX = (2.0 * (float(x) + 0.5) / float(params.width) - 1.0) * aspectRatio * fovScale;
-    float ndcY = (1.0 - 2.0 * (float(y) + 0.5) / float(params.height)) * fovScale;
+    // Width angle: positive = looking left (+y direction)
+    // Center of pixel with 0.5 offset
+    float widthAngle = (float(x) - float(params.width / 2) + 0.5f) * da;
 
-    // Initial position and momentum
+    // Height angle: match CPU convention
+    // CPU: (heightIdx - h/2 + 0.5) * da
+    // For y=0 (top), this is negative; for y=h-1 (bottom), positive
+    float heightAngle = (float(y) - float(params.height / 2) + 0.5f) * da;
+
+    // Initial position (t, x, y, z)
     Particle state;
     state.position = {params.camPos.x, params.camPos.y, params.camPos.z, params.camPos.w};
 
-    // Ray direction: looking along -x axis, with y=right, z=up
-    float dirX = -1.0;
-    float dirY = ndcX;
-    float dirZ = ndcY;
-    float dirNorm = sqrt(dirX*dirX + dirY*dirY + dirZ*dirZ);
+    // Baseline momentum: pointing in -x direction, with p^t = -1 for null geodesic
+    // CPU uses: centralMom = baselineOutDir - baselineTimeDir = (0,-1,0,0) - (1,0,0,0) = (-1,-1,0,0)
+    // Apply rotations for pixel direction (simplified, no full rotor algebra)
+    float cosW = cos(widthAngle);
+    float sinW = sin(widthAngle);
+    float cosH = cos(heightAngle);
+    float sinH = sin(heightAngle);
 
-    // Null geodesic: p^t = |p_spatial| for massless particles
-    float pSpatial = 1.0;  // Normalize spatial momentum
-    state.momentum = {pSpatial, dirX / dirNorm, dirY / dirNorm, dirZ / dirNorm};
+    // Rotate baseline direction (-1, 0, 0) by widthAngle in xy plane, then heightAngle in xz plane
+    // After width rotation: (-cosW, sinW, 0)
+    // After height rotation: (-cosW*cosH, sinW, -cosW*sinH) - but we need to be careful about order
+
+    // Actually, let's match the CPU more directly:
+    // CPU rotates (0, -1, 0, 0) in out-left plane by widthAngle, then in up-out plane by heightAngle
+    // out = -x = (0, -1, 0, 0), left = +y = (0, 0, 1, 0), up = +z = (0, 0, 0, 1)
+
+    // Simple approximation: small angle rotations
+    // px = -cos(widthAngle)*cos(heightAngle) ≈ -1 for small angles
+    // py = sin(widthAngle)
+    // pz = cos(widthAngle)*sin(heightAngle)
+
+    float px = -cosW * cosH;
+    float py = sinW;
+    float pz = -cosW * sinH;  // Note: negative because heightAngle convention
+
+    // For null geodesic: p^t = -|p_spatial| (future-directed ingoing)
+    // CPU has p^t = -1, and spatial part is unnormalized
+    // Match CPU: p = (-1, px, py, pz) where |spatial| ≈ 1
+    float pMag = sqrt(px*px + py*py + pz*pz);
+
+    // Null condition: -pt^2 + px^2 + py^2 + pz^2 = 0 => pt = -|p_spatial|
+    state.momentum = {-pMag, px, py, pz};
 
     // Integration loop with adaptive stepping
+    // Match CPU: integrateAdaptive checks stop BEFORE step, adjusts dparam AFTER step
     float param = 0.0;
     float dparam = params.dparam0;
 
     for (uint step = 0; step < params.maxSteps; step++) {
-        // Check escape
-        float r2 = state.position.v1 * state.position.v1 +
-                   state.position.v2 * state.position.v2 +
-                   state.position.v3 * state.position.v3;
-        if (r2 > params.extractRadius * params.extractRadius) break;
+        // Check escape - use spherical r, not just Cartesian distance
+        float x = state.position.v1, y = state.position.v2, z = state.position.v3;
+        float r = sqrt(x*x + y*y + z*z);
+        if (r >= params.extractRadius) break;
 
         // Check max param
-        if (param > params.maxParam) break;
+        if (param >= params.maxParam) break;
 
-        // Check step ratio (blueshift)
+        // Check step ratio (blueshift): CPU checks dparam0/dparam >= maxRatio
+        // After adjustment, dparam = dparam0/|pt|, so this becomes |pt| >= maxRatio
         float pt = fabs(state.momentum.v0);
-        if (pt > 1e-10 && dparam / params.dparam0 * pt > params.maxStepRatio) break;
+        if (params.dparam0 / dparam >= params.maxStepRatio) break;
 
         // RK4 step
         state = rk4_step(state, dparam, params.spinParam);
         param += dparam;
 
-        // Adjust step size based on blueshift
+        // Adjust step size based on blueshift (for NEXT iteration)
+        pt = fabs(state.momentum.v0);  // Use updated momentum
         float ratio = (pt > 1e-10) ? pt : 1e-10;
         dparam = params.dparam0 / ratio;
     }
