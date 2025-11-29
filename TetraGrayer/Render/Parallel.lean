@@ -17,7 +17,7 @@ open Core Image
 structure RenderConfig where
   width : Nat
   height : Nat
-  numChunks : Nat := 8  -- Number of parallel chunks (typically = CPU cores)
+  numChunks : Nat := 16  -- Number of parallel chunks (typically = CPU cores)
   showProgress : Bool := true
 deriving Repr
 
@@ -43,14 +43,14 @@ def makeChunks (cfg : RenderConfig) : Array Chunk :=
       row := row + thisChunkRows
     return chunks
 
-/-- Render a single chunk, returning an array of RGB values in row-major order. -/
-def renderChunk (chunk : Chunk) (pixel : Nat → Nat → RGB) : Array RGB :=
-  Id.run do
-    let mut result := #[]
-    for y in [chunk.startRow : chunk.endRow] do
-      for x in [0 : chunk.width] do
-        result := result.push (pixel x y)
-    return result
+/-- Render a single chunk, returning an array of RGB values in row-major order.
+The noinline attribute prevents optimizer from hoisting this out of task closures. -/
+@[noinline] def renderChunk (chunk : Chunk) (pixel : Nat → Nat → RGB) : IO (Array RGB) := do
+  let mut result := #[]
+  for y in [chunk.startRow : chunk.endRow] do
+    for x in [0 : chunk.width] do
+      result := result.push (pixel x y)
+  return result
 
 /-- Render all chunks in parallel using IO.asTask.
 
@@ -63,7 +63,7 @@ def renderChunksParallel (chunks : Array Chunk) (pixel : Nat → Nat → RGB)
   let tasks ← chunks.mapIdxM fun i chunk => do
     let idx : Nat := i
     IO.asTask (prio := .dedicated) do
-      let pixels := renderChunk chunk pixel
+      let pixels ← renderChunk chunk pixel
       return (idx, pixels)
 
   -- Wait for all tasks and collect results
@@ -82,15 +82,15 @@ def writePixelsPPM (path : System.FilePath) (w h : Nat) (pixels : Array RGB) : I
   | some dir => IO.FS.createDirAll dir
   | none => pure ()
 
+  -- Use getD for safe access with default black pixel
   IO.FS.withFile path .write fun handle => do
     handle.putStr s!"P3\n{w} {h}\n255\n"
-    let mut idx := 0
-    for _ in [0:h] do
+    for row in [:h] do
       let mut line := ""
-      for _ in [0:w] do
-        let c := pixels[idx]!
+      for col in [:w] do
+        let idx := row * w + col
+        let c := pixels.getD idx RGB.black
         line := line ++ s!"{c.r.toNat} {c.g.toNat} {c.b.toNat} "
-        idx := idx + 1
       handle.putStr (line ++ "\n")
 
 /-- Render image in parallel and write to PPM.

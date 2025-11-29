@@ -1,5 +1,5 @@
 import Lake
-open Lake DSL
+open System Lake DSL
 
 package «TetraGrayer» where
   version := v!"0.1.0"
@@ -10,10 +10,30 @@ package «TetraGrayer» where
     ⟨`linter.missingDocs, true⟩,
     ⟨`doc.verso, true⟩
   ]
+  -- Release build: enables C compiler optimizations
+  precompileModules := true
+  buildType := .release
+  -- C compiler optimization flags (passed to leanc -> clang/gcc)
+  -- -march=native enables CPU-specific optimizations (AVX, etc.)
+  -- -flto enables link-time optimization for cross-module inlining
+  moreLeancArgs := #["-O3", "-ffast-math", "-march=native", "-funroll-loops"]
+  moreLinkArgs := #["-O3", "-ffast-math", "-march=native", "-flto"]
 
 -- ProofWidgets disabled: version incompatibility with Lean 4.25
 -- require proofwidgets from git
 --   "https://github.com/leanprover-community/ProofWidgets4" @ "v0.0.52"
+
+-- FFI C library for fast trig
+target ffi.o pkg : FilePath := do
+  let oFile := pkg.buildDir / "c" / "trig.o"
+  let srcJob ← inputTextFile <| pkg.dir / "ffi" / "trig.c"
+  let weakArgs := #["-I", (← getLeanIncludeDir).toString, "-O3", "-ffast-math"]
+  buildO oFile srcJob weakArgs #["-fPIC"] "cc" getLeanTrace
+
+extern_lib libleanffi pkg := do
+  let ffiO ← ffi.o.fetch
+  let name := nameToStaticLib "leanffi"
+  buildStaticLib (pkg.staticLibDir / name) #[ffiO]
 
 @[default_target]
 lean_lib TetraGrayer where
@@ -149,3 +169,82 @@ script render_full do
   }
   let exitCode ← render.wait
   return exitCode.toNat.toUInt32
+
+/-- Benchmark raytracing performance using hyperfine.
+
+Usage: lake run bench [runs]
+  runs: number of benchmark runs (default: 3)
+
+Benchmarks a small 160x90 render for quick iteration.
+-/
+script bench (args) do
+  -- Build first with release optimizations
+  let build ← IO.Process.output {
+    cmd := "lake"
+    args := #["build"]
+  }
+  if build.exitCode != 0 then
+    IO.eprintln s!"Build failed:\n{build.stderr}"
+    return 1
+
+  -- Check if hyperfine is available
+  let hfCheck ← IO.Process.output {
+    cmd := "which"
+    args := #["hyperfine"]
+  }
+  if hfCheck.exitCode != 0 then
+    IO.eprintln "hyperfine not found. Install with: cargo install hyperfine"
+    return 1
+
+  let runs := args.head?.getD "3"
+
+  IO.println s!"Benchmarking small render ({runs} runs)..."
+  IO.println "Build type: release, C flags: -O3 -ffast-math"
+  IO.println ""
+
+  let bench ← IO.Process.spawn {
+    cmd := "hyperfine"
+    args := #[
+      "--warmup", "1",
+      "--runs", runs,
+      "--export-markdown", "benchmark.md",
+      "./.lake/build/bin/tetragrayer test"
+    ]
+    stdout := .inherit
+    stderr := .inherit
+  }
+  let exitCode ← bench.wait
+  return exitCode.toNat.toUInt32
+
+/-- Quick single-run timing for iteration.
+
+Usage: lake run time [mode]
+  mode: test, flat, doran (default: test)
+-/
+script time (args) do
+  let build ← IO.Process.output {
+    cmd := "lake"
+    args := #["build"]
+  }
+  if build.exitCode != 0 then
+    IO.eprintln s!"Build failed:\n{build.stderr}"
+    return 1
+
+  let mode := args.head?.getD "test"
+  IO.println s!"Timing '{mode}' mode..."
+
+  let start ← IO.monoMsNow
+  let render ← IO.Process.output {
+    cmd := "./.lake/build/bin/tetragrayer"
+    args := #[mode]
+  }
+  let elapsed ← IO.monoMsNow
+  let duration := elapsed - start
+
+  IO.println render.stdout
+  if render.exitCode != 0 then
+    IO.eprintln s!"Render failed:\n{render.stderr}"
+    return 1
+
+  IO.println s!"\n⏱  Elapsed: {duration} ms ({duration.toFloat / 1000.0} s)"
+  return 0

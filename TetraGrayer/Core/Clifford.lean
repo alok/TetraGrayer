@@ -16,6 +16,7 @@ namespace TetraGrayer
 namespace Core
 
 /-- 4-vector in spacetime. -/
+@[unbox]
 structure CliffordVector where
   v0 : ℝ  -- time component
   v1 : ℝ  -- x
@@ -50,11 +51,11 @@ deriving Repr, Inhabited
 
 namespace CliffordVector
 
-def zero : CliffordVector := ⟨0, 0, 0, 0⟩
+@[inline] def zero : CliffordVector := ⟨0, 0, 0, 0⟩
 
-def mk4 (a b c d : ℝ) : CliffordVector := ⟨a, b, c, d⟩
+@[inline] def mk4 (a b c d : ℝ) : CliffordVector := ⟨a, b, c, d⟩
 
-def get (v : CliffordVector) (i : Nat) : ℝ :=
+@[inline] def get (v : CliffordVector) (i : Nat) : ℝ :=
   match i with
   | 0 => v.v0
   | 1 => v.v1
@@ -62,19 +63,19 @@ def get (v : CliffordVector) (i : Nat) : ℝ :=
   | 3 => v.v3
   | _ => 0.0
 
-def add (a b : CliffordVector) : CliffordVector :=
+@[inline] def add (a b : CliffordVector) : CliffordVector :=
   { v0 := a.v0 + b.v0, v1 := a.v1 + b.v1, v2 := a.v2 + b.v2, v3 := a.v3 + b.v3 }
 
-def sub (a b : CliffordVector) : CliffordVector :=
+@[inline] def sub (a b : CliffordVector) : CliffordVector :=
   { v0 := a.v0 - b.v0, v1 := a.v1 - b.v1, v2 := a.v2 - b.v2, v3 := a.v3 - b.v3 }
 
-def smul (s : ℝ) (v : CliffordVector) : CliffordVector :=
+@[inline] def smul (s : ℝ) (v : CliffordVector) : CliffordVector :=
   { v0 := s * v.v0, v1 := s * v.v1, v2 := s * v.v2, v3 := s * v.v3 }
 
-def neg (v : CliffordVector) : CliffordVector :=
+@[inline] def neg (v : CliffordVector) : CliffordVector :=
   { v0 := -v.v0, v1 := -v.v1, v2 := -v.v2, v3 := -v.v3 }
 
-def sdiv (v : CliffordVector) (s : ℝ) : CliffordVector :=
+@[inline] def sdiv (v : CliffordVector) (s : ℝ) : CliffordVector :=
   smul (1.0 / s) v
 
 instance : Zero CliffordVector := ⟨zero⟩
@@ -122,11 +123,11 @@ end CliffordVector
 
 namespace Bivector
 
-def zero : Bivector := ⟨0, 0, 0, 0, 0, 0⟩
+@[inline] def zero : Bivector := ⟨0, 0, 0, 0, 0, 0⟩
 
-def mk6 (a b c d e f : ℝ) : Bivector := ⟨a, b, c, d, e, f⟩
+@[inline] def mk6 (a b c d e f : ℝ) : Bivector := ⟨a, b, c, d, e, f⟩
 
-def get (b : Bivector) (i : Nat) : ℝ :=
+@[inline] def get (b : Bivector) (i : Nat) : ℝ :=
   match i with
   | 0 => b.b01
   | 1 => b.b02
@@ -136,19 +137,19 @@ def get (b : Bivector) (i : Nat) : ℝ :=
   | 5 => b.b23
   | _ => 0.0
 
-def add (a b : Bivector) : Bivector :=
+@[inline] def add (a b : Bivector) : Bivector :=
   { b01 := a.b01 + b.b01, b02 := a.b02 + b.b02, b12 := a.b12 + b.b12
   , b03 := a.b03 + b.b03, b13 := a.b13 + b.b13, b23 := a.b23 + b.b23 }
 
-def sub (a b : Bivector) : Bivector :=
+@[inline] def sub (a b : Bivector) : Bivector :=
   { b01 := a.b01 - b.b01, b02 := a.b02 - b.b02, b12 := a.b12 - b.b12
   , b03 := a.b03 - b.b03, b13 := a.b13 - b.b13, b23 := a.b23 - b.b23 }
 
-def smul (s : ℝ) (b : Bivector) : Bivector :=
+@[inline] def smul (s : ℝ) (b : Bivector) : Bivector :=
   { b01 := s * b.b01, b02 := s * b.b02, b12 := s * b.b12
   , b03 := s * b.b03, b13 := s * b.b13, b23 := s * b.b23 }
 
-def neg (b : Bivector) : Bivector :=
+@[inline] def neg (b : Bivector) : Bivector :=
   { b01 := -b.b01, b02 := -b.b02, b12 := -b.b12
   , b03 := -b.b03, b13 := -b.b13, b23 := -b.b23 }
 
@@ -263,11 +264,11 @@ end Versor
 -- ============================================================================
 
 /-- Vector inner product: v|w = -v₀w₀ + v₁w₁ + v₂w₂ + v₃w₃ -/
-def vectorDot (v w : CliffordVector) : ℝ :=
+@[inline] def vectorDot (v w : CliffordVector) : ℝ :=
   -v.v0 * w.v0 + v.v1 * w.v1 + v.v2 * w.v2 + v.v3 * w.v3
 
 /-- Bivector inner product with signature. -/
-def bivectorDot (b1 b2 : Bivector) : ℝ :=
+@[inline] def bivectorDot (b1 b2 : Bivector) : ℝ :=
   b1.b01 * b2.b01 + b1.b02 * b2.b02 - b1.b12 * b2.b12 +
   b1.b03 * b2.b03 - b1.b13 * b2.b13 - b1.b23 * b2.b23
 
@@ -280,14 +281,14 @@ def versorDot (e1 e2 : Versor) : ℝ :=
 -- ============================================================================
 
 /-- Bivector contracting a vector from the right: B|v -/
-def bivectorDotVector (b : Bivector) (v : CliffordVector) : CliffordVector :=
+@[inline] def bivectorDotVector (b : Bivector) (v : CliffordVector) : CliffordVector :=
   { v0 := b.b01 * v.v1 + b.b02 * v.v2 + b.b03 * v.v3
   , v1 := b.b01 * v.v0 + b.b12 * v.v2 + b.b13 * v.v3
   , v2 := b.b02 * v.v0 - b.b12 * v.v1 + b.b23 * v.v3
   , v3 := b.b03 * v.v0 - b.b13 * v.v1 - b.b23 * v.v2 }
 
 /-- Vector contracting a bivector from the left: v|B = -(B|v) -/
-def vectorDotBivector (v : CliffordVector) (b : Bivector) : CliffordVector :=
+@[inline] def vectorDotBivector (v : CliffordVector) (b : Bivector) : CliffordVector :=
   -(bivectorDotVector b v)
 
 -- ============================================================================
@@ -295,7 +296,7 @@ def vectorDotBivector (v : CliffordVector) (b : Bivector) : CliffordVector :=
 -- ============================================================================
 
 /-- Wedge product of two vectors: v∧w -/
-def vectorWedge (v w : CliffordVector) : Bivector :=
+@[inline] def vectorWedge (v w : CliffordVector) : Bivector :=
   { b01 := v.v0 * w.v1 - v.v1 * w.v0
   , b02 := v.v0 * w.v2 - v.v2 * w.v0
   , b12 := v.v1 * w.v2 - v.v2 * w.v1
@@ -319,7 +320,7 @@ def vectorWedgeBivector (v : CliffordVector) (b : Bivector) : Trivector :=
 -- ============================================================================
 
 /-- Hodge dual of bivector: ~B -/
-def bivectorDual (b : Bivector) : Bivector :=
+@[inline] def bivectorDual (b : Bivector) : Bivector :=
   { b01 := -b.b23
   , b02 := b.b13
   , b12 := b.b03

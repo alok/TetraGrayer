@@ -96,5 +96,102 @@ def flatColormap (dir : CliffordVector) : RGB :=
   else if nx < 0.0 && ny < 0.0 then RGB.ofNat 50 50 220
   else RGB.ofNat 220 220 50
 
+/-- Checkerboard pattern on celestial sphere.
+
+Creates a checkerboard of alternating colors based on latitude/longitude.
+Number of checks controlled by frequency parameter.
+
+Gravitational lensing distorts the regular pattern dramatically
+near black holes, making it very educational for visualizing spacetime curvature.
+-/
+def checkerboardColormap (escapeRadius : ℝ) (frequency : ℝ := 8.0)
+    (color1 : RGB := RGB.white) (color2 : RGB := RGB.ofNat 30 30 30)
+    (data : ODEData Particle) : RGB :=
+  let pos := data.value.position
+  let spherical := sphericalFromCartesian pos
+
+  if spherical.v1 >= escapeRadius then
+    let theta := spherical.v2
+    let phi := spherical.v3
+
+    -- Checkerboard based on theta and phi
+    let thetaIndex := Float.floor (theta * frequency / π)
+    let phiIndex := Float.floor (phi * frequency / π)
+
+    -- XOR pattern for checkerboard
+    let isEven := (thetaIndex.toUInt64 + phiIndex.toUInt64) % 2 == 0
+    if isEven then color1 else color2
+  else
+    -- Didn't escape: black (fell into black hole)
+    RGB.black
+
+/-- Einstein ring pattern - concentric rings for visualizing lensing.
+
+Rings appear as circles in flat space but become distorted arcs
+(Einstein rings) around massive objects.
+-/
+def ringColormap (escapeRadius : ℝ) (numRings : ℝ := 10.0)
+    (data : ODEData Particle) : RGB :=
+  let pos := data.value.position
+  let spherical := sphericalFromCartesian pos
+
+  if spherical.v1 >= escapeRadius then
+    let theta := spherical.v2
+
+    -- Rings based on latitude
+    let ringIndex := Float.floor (theta * numRings / π)
+    let isEven := ringIndex.toUInt64 % 2 == 0
+
+    -- Color by latitude band
+    let hue := theta / π  -- 0 at pole, 1 at other pole
+    if isEven then
+      -- Colored ring
+      let r := (255.0 * (1.0 - hue)).toUInt32.toNat
+      let b := (255.0 * hue).toUInt32.toNat
+      RGB.ofNat r 100 b
+    else
+      RGB.ofNat 20 20 20  -- Dark ring
+  else
+    RGB.black
+
+/-- Starfield background with realistic distribution.
+
+Sparse random-looking stars based on position hash.
+More stars near galactic plane (z ≈ 0).
+-/
+def starfieldColormap (escapeRadius : ℝ) (starDensity : ℝ := 0.02)
+    (data : ODEData Particle) : RGB :=
+  let pos := data.value.position
+  let spherical := sphericalFromCartesian pos
+
+  if spherical.v1 >= escapeRadius then
+    let theta := spherical.v2
+    let phi := spherical.v3
+
+    -- Pseudo-random star placement using trig hash
+    let hash1 := Float.sin (theta * 127.1 + phi * 311.7)
+    let hash2 := Float.cos (theta * 269.5 + phi * 183.3)
+    let starProb := Float.abs (hash1 * hash2)
+
+    -- More stars near equator (galactic plane)
+    let galacticBoost := 1.0 + Float.abs (Float.cos theta)
+    let threshold := 1.0 - starDensity * galacticBoost
+
+    if starProb > threshold then
+      -- Star brightness varies
+      let brightness := (150.0 + 105.0 * Float.abs hash1).toUInt32.toNat
+      -- Slight color variation
+      let colorVar := hash2
+      if colorVar > 0.3 then
+        RGB.ofNat brightness brightness brightness  -- White star
+      else if colorVar > -0.3 then
+        RGB.ofNat brightness brightness (brightness - 30)  -- Yellow-ish
+      else
+        RGB.ofNat (brightness - 30) (brightness - 20) brightness  -- Blue-ish
+    else
+      RGB.ofNat 2 2 8  -- Very dark blue background
+  else
+    RGB.black
+
 end Image
 end TetraGrayer

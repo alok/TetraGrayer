@@ -29,7 +29,7 @@ open Core
 
 β = atanh(sin(ν) / cosh(μ))
 -/
-def doranBeta (coshMu sinNu : ℝ) : ℝ :=
+@[inline] def doranBeta (coshMu sinNu : ℝ) : ℝ :=
   Float.atanh (sinNu / coshMu)
 
 /-- Compute Doran's velocity vector v.
@@ -38,18 +38,18 @@ v = t̂ cosh(β) + φ̂ sinh(β)
 
 where t̂ is the time basis vector and φ̂ is the azimuthal basis vector.
 -/
-def doranVectorV (beta _sinPhi _cosPhi : ℝ) (that phihat : CliffordVector) : CliffordVector :=
+@[inline] def doranVectorV (beta _sinPhi _cosPhi : ℝ) (that phihat : CliffordVector) : CliffordVector :=
   Float.cosh beta * that + Float.sinh beta * phihat
 
 /-- Position gauge h: transforms vectors from tetrad frame to coordinate frame. -/
-def doranPositionGauge (sinhMu : ℝ) (emuhat : CliffordVector) (a : ℝ)
+@[inline] def doranPositionGauge (sinhMu : ℝ) (emuhat : CliffordVector) (a : ℝ)
     (doranV vecArg : CliffordVector) : CliffordVector :=
   let rootFactor := Float.sqrt (2.0 * sinhMu / a / (1.0 + sinhMu * sinhMu))
   let dotProduct := vectorDot vecArg doranV
   vecArg + rootFactor * dotProduct * emuhat
 
 /-- Rotation gauge omega: returns the bivector-valued connection for geodesic equation. -/
-def doranRotationGauge (sinhMu cosNu : ℝ)
+@[inline] def doranRotationGauge (sinhMu cosNu : ℝ)
     (muhat nuhat phihat that : CliffordVector)
     (beta : ℝ) (doranV : CliffordVector) (a : ℝ)
     (vecArg : CliffordVector) : Bivector :=
@@ -100,7 +100,7 @@ def doranRotationGauge (sinhMu cosNu : ℝ)
 -- ============================================================================
 
 /-- Flat spacetime RHS: dx/dλ = p, dp/dλ = 0. -/
-def flatRHS (data : Particle) (_ : ℝ) : Particle :=
+@[inline] def flatRHS (data : Particle) (_ : ℝ) : Particle :=
   Particle.ofPosMom data.momentum CliffordVector.zero
 
 -- ============================================================================
@@ -116,37 +116,32 @@ Parameters:
 
 Returns derivative of particle state.
 -/
-def doranRHS (data : Particle) (_ : ℝ) (a : ℝ) : Particle :=
-  let spheroidalCoords := spheroidalFromCartesian a data.position
+@[inline] def doranRHS (data : Particle) (_ : ℝ) (a : ℝ) : Particle :=
+  let coords := spheroidalFromCartesian a data.position
+  let μ := coords.v1
+  let ν := coords.v2
+  let φ := coords.v3
 
-  let mu := spheroidalCoords.v1
-  let nu := spheroidalCoords.v2
-  let phi := spheroidalCoords.v3
+  -- Combined trig calls (6 → 3 calls in theory, but still 6 under the hood)
+  let (sinhμ, coshμ) := sinhcosh μ
+  let (sinν, cosν) := sincos ν
+  let (sinφ, cosφ) := sincos φ
 
-  let sinhMu := Float.sinh mu
-  let coshMu := Float.cosh mu
-  let sinNu := Float.sin nu
-  let cosNu := Float.cos nu
-  let sinPhi := Float.sin phi
-  let cosPhi := Float.cos phi
+  -- Spheroidal basis vectors
+  let ê_μ := spheroidalBasisEmu sinhμ coshμ sinν cosν sinφ cosφ
+  let ê_ν := spheroidalBasisEnu sinhμ coshμ sinν cosν sinφ cosφ
+  let ê_φ := spheroidalBasisPhi sinφ cosφ
+  let ê_t := spheroidalBasisT
 
-  -- Compute spheroidal basis vectors in Cartesian coords
-  let muhat := spheroidalBasisEmu sinhMu coshMu sinNu cosNu sinPhi cosPhi
-  let nuhat := spheroidalBasisEnu sinhMu coshMu sinNu cosNu sinPhi cosPhi
-  let phihat := spheroidalBasisPhi sinPhi cosPhi
-  let that := spheroidalBasisT
+  let β := doranBeta coshμ sinν
+  let V := doranVectorV β sinφ cosφ ê_t ê_φ
 
-  let beta := doranBeta coshMu sinNu
-  let doranV := doranVectorV beta sinPhi cosPhi that phihat
+  -- x' = h(k), k' = -ω(k)|k
+  let x' := doranPositionGauge sinhμ ê_μ a V data.momentum
+  let ω := doranRotationGauge sinhμ cosν ê_μ ê_ν ê_φ ê_t β V a data.momentum
+  let k' := CliffordVector.neg (bivectorDotVector ω data.momentum)
 
-  -- Position derivative: x' = h(k)
-  let posRHS := doranPositionGauge sinhMu muhat a doranV data.momentum
-
-  -- Momentum derivative: k' = -ω(k)|k
-  let omega := doranRotationGauge sinhMu cosNu muhat nuhat phihat that beta doranV a data.momentum
-  let momRHS := CliffordVector.neg (bivectorDotVector omega data.momentum)
-
-  Particle.ofPosMom posRHS momRHS
+  ⟨x', k'⟩
 
 end Spacetimes
 end TetraGrayer

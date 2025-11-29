@@ -64,6 +64,16 @@ def normalizeAngle (θ : ℝ) : ℝ :=
   (n - Float.floor n) * τ
 
 -- ============================================================================
+-- Combined trig functions (pure Lean - FFI was slower due to tuple boxing)
+-- ============================================================================
+
+/-- Combined sin and cos. -/
+@[inline] def sincos (θ : ℝ) : ℝ × ℝ := (Float.sin θ, Float.cos θ)
+
+/-- Combined sinh and cosh. -/
+@[inline] def sinhcosh (x : ℝ) : ℝ × ℝ := (Float.sinh x, Float.cosh x)
+
+-- ============================================================================
 -- Numeric comparison with tolerance
 -- ============================================================================
 

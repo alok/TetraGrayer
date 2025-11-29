@@ -11,6 +11,7 @@ namespace TetraGrayer
 namespace Core
 
 /-- A particle (photon) with 4-position and 4-momentum. -/
+@[unbox]
 structure Particle where
   /-- Spacetime position (t, x, y, z) -/
   position : CliffordVector
@@ -25,22 +26,22 @@ def zero : Particle :=
   ⟨CliffordVector.zero, CliffordVector.zero⟩
 
 /-- Create particle from position and momentum. -/
-def ofPosMom (pos mom : CliffordVector) : Particle := ⟨pos, mom⟩
+@[inline] def ofPosMom (pos mom : CliffordVector) : Particle := ⟨pos, mom⟩
 
 /-- Scalar multiply both position and momentum. -/
-def smul (s : ℝ) (p : Particle) : Particle :=
+@[inline] def smul (s : ℝ) (p : Particle) : Particle :=
   ⟨s * p.position, s * p.momentum⟩
 
 /-- Add two particles componentwise. -/
-def add (a b : Particle) : Particle :=
+@[inline] def add (a b : Particle) : Particle :=
   ⟨a.position + b.position, a.momentum + b.momentum⟩
 
 /-- Negate both position and momentum. -/
-def neg (p : Particle) : Particle :=
+@[inline] def neg (p : Particle) : Particle :=
   ⟨-p.position, -p.momentum⟩
 
 /-- Subtract particles componentwise. -/
-def sub (a b : Particle) : Particle :=
+@[inline] def sub (a b : Particle) : Particle :=
   ⟨a.position - b.position, a.momentum - b.momentum⟩
 
 instance : Zero Particle := ⟨zero⟩

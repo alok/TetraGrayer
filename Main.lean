@@ -21,7 +21,37 @@ def renderDoranFull : IO Unit := do
     hFov := π / 2.0
     dparam := 0.05 }
   let params := DoranParams.mk 0.5 50.0 500.0 40.0 100000
-  renderDoran "artifacts/doran-full.ppm" cam params
+  renderDoran "artifacts/doran-full.ppm" cam params 720  -- One chunk per row for maximum load balancing
+
+/-- Benchmark comparing standard vs fused RK4 -/
+def benchmarkFusion : IO Unit := do
+  let cam := { CameraParams.default 1280 720 with
+    position := CliffordVector.mk4 0.0 20.0 0.0 0.0
+    hFov := π / 2.0
+    dparam := 0.05 }
+  let params := DoranParams.mk 0.5 50.0 500.0 40.0 100000
+
+  IO.println "=== Loop Fusion Benchmark ==="
+  IO.println ""
+  IO.println "Running standard version..."
+  let startStd ← IO.monoNanosNow
+  renderDoran "artifacts/bench-standard.ppm" cam params
+  let endStd ← IO.monoNanosNow
+  let stdTime := (endStd - startStd).toFloat / 1e9
+
+  IO.println ""
+  IO.println "Running fused version..."
+  let startFused ← IO.monoNanosNow
+  renderDoranFused "artifacts/bench-fused.ppm" cam params
+  let endFused ← IO.monoNanosNow
+  let fusedTime := (endFused - startFused).toFloat / 1e9
+
+  IO.println ""
+  IO.println "=== Results ==="
+  IO.println s!"  Standard: {stdTime} s"
+  IO.println s!"  Fused:    {fusedTime} s"
+  let speedup := stdTime / fusedTime
+  IO.println s!"  Speedup:  {speedup}x"
 
 /-- Main entry point: render both flat and Doran spacetime images.
 
@@ -29,6 +59,8 @@ Usage:
   .lake/build/bin/tetragrayer           -- full render suite
   .lake/build/bin/tetragrayer flat      -- flat only (for comparison test)
   .lake/build/bin/tetragrayer test      -- small test renders
+  .lake/build/bin/tetragrayer demos     -- all demo renders (disk, checker, stars, wormhole)
+  .lake/build/bin/tetragrayer bench     -- A/B benchmark: standard vs fused RK4
 -/
 def main (args : List String) : IO Unit := do
   -- Upstream flat.cu parity params:
@@ -60,6 +92,25 @@ def main (args : List String) : IO Unit := do
     IO.println "\n[2/2] Small Doran test (320x180)..."
     testDoranSmall
     IO.println "\nTest renders complete!"
+
+  | "demos" =>
+    -- All demo renders with different colormaps/spacetimes
+    IO.println "\nRendering all demo images..."
+    renderAllDemos
+
+  | "bench" =>
+    -- A/B benchmark for loop fusion
+    benchmarkFusion
+
+  | "debug" =>
+    -- Check for unexpected sharing in integration loop
+    -- Use small maxSteps to avoid flooding output
+    let cam := { CameraParams.default 1280 720 with
+      position := CliffordVector.mk4 0.0 20.0 0.0 0.0
+      hFov := π / 2.0
+      dparam := 0.05 }
+    let params := DoranParams.mk 0.5 50.0 500.0 40.0 10  -- Only 10 steps!
+    renderDoranDebugSinglePixel cam params
 
   | _ =>
     -- Full render suite
