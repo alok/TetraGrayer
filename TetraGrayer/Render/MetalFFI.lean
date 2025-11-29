@@ -224,20 +224,57 @@ def standard : RenderConfig :=
 end RenderConfig
 
 -- ============================================================================
+-- Type-Level Pixel Format
+-- ============================================================================
+
+/-- Pixel format at the type level. -/
+inductive PixelFormat where
+  /-- RGBA format (4 bytes per pixel). -/
+  | rgba
+  /-- BGRA format (4 bytes per pixel, common in GPU APIs). -/
+  | bgra
+  /-- RGB format (3 bytes per pixel, no alpha). -/
+  | rgb
+deriving Repr, DecidableEq, Inhabited
+
+namespace PixelFormat
+
+/-- Bytes per pixel for this format. -/
+def bytesPerPixel : PixelFormat → Nat
+  | rgba => 4
+  | bgra => 4
+  | rgb => 3
+
+/-- Human-readable name. -/
+def name : PixelFormat → String
+  | rgba => "RGBA"
+  | bgra => "BGRA"
+  | rgb => "RGB"
+
+end PixelFormat
+
+-- ============================================================================
 -- Metal Image Result
 -- ============================================================================
 
-/-- RGBA image buffer from Metal rendering.
+/-- Image buffer with type-level pixel format.
 
-The buffer has exactly `4 * dims.pixels` bytes, with each pixel
-stored as (R, G, B, A) in row-major order.
+The buffer has exactly `format.bytesPerPixel * dims.pixels` bytes,
+with pixels stored in row-major order.
 -/
-structure MetalImage where
+structure Image (format : PixelFormat) where
+  /-- Image dimensions. -/
   dims : Dims
-  /-- Raw RGBA pixel data. -/
+  /-- Raw pixel data. -/
   data : ByteArray
-  /-- Proof that data has correct size. -/
-  size_eq : data.size = 4 * dims.pixels
+  /-- Proof that data has correct size for format. -/
+  size_eq : data.size = format.bytesPerPixel * dims.pixels
+
+/-- RGBA image (the format Metal produces). -/
+abbrev MetalImage := Image PixelFormat.rgba
+
+/-- RGB image (for PPM output). -/
+abbrev RGBImage := Image PixelFormat.rgb
 
 namespace MetalImage
 
@@ -301,11 +338,24 @@ def toRGBArray (img : MetalImage) : Array RGB := Id.run do
     result := result.push ⟨r, g, b⟩
   return result
 
+/-- Convert RGBA image to RGB ByteArray (drops alpha channel). -/
+def toRGBBytes (img : MetalImage) : ByteArray := Id.run do
+  let mut bytes := ByteArray.mkEmpty (img.dims.pixels * 3)
+  for i in [:img.dims.pixels] do
+    let idx := i * 4
+    bytes := bytes.push (img.data.get! idx)      -- R
+    bytes := bytes.push (img.data.get! (idx + 1)) -- G
+    bytes := bytes.push (img.data.get! (idx + 2)) -- B
+  return bytes
+
 /-- Write to PPM file. -/
 def writePPM (img : MetalImage) (path : System.FilePath) : IO Unit := do
   let pixels := img.toRGBArray
   let pixelFn := fun x y => pixels[y * img.dims.width + x]!
   Image.writePPM path img.dims.width img.dims.height pixelFn
+
+/-- Get format name. -/
+def formatName (_ : MetalImage) : String := PixelFormat.rgba.name
 
 end MetalImage
 
