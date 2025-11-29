@@ -334,6 +334,73 @@ opaque metalRenderRaw :
   IO (Int × ByteArray)
 
 -- ============================================================================
+-- Resource-Safe Metal Context
+-- ============================================================================
+
+/-- Opaque handle representing an initialized Metal context.
+    This type exists only to track initialization state at the type level.
+-/
+private opaque MetalContextImpl : Type
+/-- Proof that Metal has been initialized. -/
+def MetalContext : Type := MetalContextImpl
+
+/-- Token proving Metal is initialized. Dropped on cleanup. -/
+structure MetalToken where
+  private mk ::
+  /-- Phantom field to prevent external construction. -/
+  private initialized : Unit
+
+/-- Bracket pattern for safe Metal resource management.
+    Ensures cleanup runs even if the action throws.
+    Usage: withMetal (fun tok => renderWithToken tok config)
+-/
+def withMetal {α : Type} (action : MetalToken → IO α) : IO (Result α) := do
+  if !metalAvailable () then
+    return .unavailable
+
+  let initResult ← metalInit ()
+  if initResult != 0 then
+    return .initFailed initResult
+
+  -- Create token proving initialization
+  let token : MetalToken := ⟨()⟩
+
+  try
+    let result ← action token
+    return .ok result
+  finally
+    metalCleanup ()
+
+/-- Raw render that requires a MetalToken proof of initialization. -/
+def renderWithToken (token : MetalToken) (config : RenderConfig) : IO (Result MetalImage) := do
+  -- Token proves Metal is initialized, no need to re-check
+  let _ := token  -- Use token to satisfy exhaustive check
+
+  let (renderResult, data) ← metalRenderRaw
+    config.dims.width.toUInt32
+    config.dims.height.toUInt32
+    config.doran.spinParam
+    config.doran.extractRadius
+    config.doran.maxParam
+    config.doran.maxStepRatio
+    config.doran.maxSteps.toUInt32
+    config.doran.dparam0
+    config.camera.t
+    config.camera.x
+    config.camera.y
+    config.camera.z
+    config.doran.hFov
+
+  if renderResult != 0 then
+    return .renderFailed renderResult
+
+  let expectedSize := 4 * config.dims.pixels
+  if h : data.size = expectedSize then
+    return .ok ⟨config.dims, data, h⟩
+  else
+    return .renderFailed (-100)
+
+-- ============================================================================
 -- High-Level API
 -- ============================================================================
 
@@ -399,6 +466,21 @@ def renderToPPM (path : System.FilePath) (config : RenderConfig) : IO (Result Un
 /-- Quick render with HD resolution and moderate spin. -/
 def quickRender (path : System.FilePath) : IO (Result Unit) :=
   renderToPPM path RenderConfig.standard
+
+/-- Render using resource-safe bracket pattern.
+    Guarantees cleanup even if rendering throws.
+    Returns nested Result: outer for init, inner for render.
+-/
+def renderSafe (config : RenderConfig) : IO (Result (Result MetalImage)) :=
+  withMetal fun token => renderWithToken token config
+
+/-- Flatten nested Result from renderSafe. -/
+def renderSafe' (config : RenderConfig) : IO (Result MetalImage) := do
+  match ← renderSafe config with
+  | .ok inner => return inner
+  | .unavailable => return .unavailable
+  | .initFailed c => return .initFailed c
+  | .renderFailed c => return .renderFailed c
 
 end Metal
 end Render
