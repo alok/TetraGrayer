@@ -28,6 +28,9 @@ package «TetraGrayer» where
     "-Wl,-rpath,./ffi/metal"
   ]
 
+-- Verso docs are in verso-docs/ subdirectory with its own toolchain
+-- (VersoManual has build issues with data files, VersoBlog works)
+
 -- ProofWidgets disabled: version incompatibility with Lean 4.25
 -- require proofwidgets from git
 --   "https://github.com/leanprover-community/ProofWidgets4" @ "v0.0.52"

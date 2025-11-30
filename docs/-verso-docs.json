@@ -1,0 +1,60 @@
+{"9":
+ "<code>Inhabited.{u} (α : Sort u) : Sort (max 1 u)</code><span class=\"sep\"></span><code class=\"docstring\">`Inhabited α` is a typeclass that says that `α` has a designated element,\ncalled `(default : α)`. This is sometimes referred to as a \"pointed type\".\n\nThis class is used by functions that need to return a value of the type\nwhen called \"out of domain\". For example, `Array.get! arr i : α` returns\na value of type `α` when `arr : Array α`, but if `i` is not in range of\nthe array, it reports a panic message, but this does not halt the program,\nso it must still return a value of type `α` (and in fact this is required\nfor logical consistency), so in this case it returns `default`.\n</code>",
+ "8":
+ "<code>Repr.{u} (α : Type u) : Type u</code><span class=\"sep\"></span><code class=\"docstring\">The standard way of turning values of some type into `Format`.\n\nWhen rendered this `Format` should be as close as possible to something that can be parsed as the\ninput value.\n</code>",
+ "7":
+ "<code>CliffordVector.z (self : CliffordVector) : Float</code><span class=\"sep\"></span><code class=\"docstring\">z spatial component </code>",
+ "6":
+ "<code>CliffordVector.y (self : CliffordVector) : Float</code><span class=\"sep\"></span><code class=\"docstring\">y spatial component </code>",
+ "5":
+ "<code>CliffordVector.x (self : CliffordVector) : Float</code><span class=\"sep\"></span><code class=\"docstring\">x spatial component </code>",
+ "4":
+ "<code>Float : Type</code><span class=\"sep\"></span><code class=\"docstring\">64-bit floating-point numbers.\n\n`Float` corresponds to the IEEE 754 *binary64* format (`double` in C or `f64` in Rust).\nFloating-point numbers are a finite representation of a subset of the real numbers, extended with\nextra “sentinel” values that represent undefined and infinite results as well as separate positive\nand negative zeroes. Arithmetic on floating-point numbers approximates the corresponding operations\non the real numbers by rounding the results to numbers that are representable, propagating error and\ninfinite values.\n\nFloating-point numbers include [subnormal numbers](https://en.wikipedia.org/wiki/Subnormal_number).\nTheir special values are:\n * `NaN`, which denotes a class of “not a number” values that result from operations such as\n   dividing zero by zero, and\n * `Inf` and `-Inf`, which represent positive and infinities that result from dividing non-zero\n   values by zero.\n</code>",
+ "32":
+ "<code>Particle.add (p q : Particle) : Particle</code><span class=\"sep\"></span><code class=\"docstring\">Addition for RK4\\. </code>",
+ "31": "<code>Particle</code>",
+ "30":
+ "<code>Particle.smul (s : Float) (p : Particle) : Particle</code><span class=\"sep\"></span><code class=\"docstring\">Scalar multiplication for RK4\\. </code>",
+ "3":
+ "<code>CliffordVector.t (self : CliffordVector) : Float</code><span class=\"sep\"></span><code class=\"docstring\">Time component </code>",
+ "29": "<code>Particle.mk (pos mom : CliffordVector) : Particle</code>",
+ "28":
+ "<code>examplePhoton : Particle</code><span class=\"sep\"></span><code class=\"docstring\">A photon at the origin moving in the z direction\\. </code>",
+ "27":
+ "<code>Particle.mom (self : Particle) : CliffordVector</code><span class=\"sep\"></span><code class=\"docstring\">4\\-momentum \\(null for photons\\) </code>",
+ "26":
+ "<code>Particle.pos (self : Particle) : CliffordVector</code><span class=\"sep\"></span><code class=\"docstring\">4\\-position in spacetime </code>",
+ "25":
+ "<code>Particle : Type</code><span class=\"sep\"></span><code class=\"docstring\">A particle in spacetime with position and momentum\\. </code>",
+ "24":
+ "<code>photonNorm : Float</code><span class=\"sep\"></span><code class=\"docstring\">Compute the norm of the photon momentum \\(should be 0 for null vector\\)\\. </code>",
+ "23":
+ "<code>photonMomentum : CliffordVector</code><span class=\"sep\"></span><code class=\"docstring\">Example 4\\-momentum for an outward\\-going photon\\. </code>",
+ "22":
+ "<code>origin : CliffordVector</code><span class=\"sep\"></span><code class=\"docstring\">Example 4\\-position vector at the origin\\. </code>",
+ "21":
+ "<code class=\"docstring\">`end` closes a `section` or `namespace` scope. If the scope is named `&lt;id&gt;`, it has to be closed\nwith `end &lt;id&gt;`. The `end` command is optional at the end of a file.\n</code>",
+ "20":
+ "<code>HMul.mk.{u, v, w} {α : Type u} {β : Type v} {γ : outParam (Type w)} (hMul : α → β → γ) : HMul α β γ</code>",
+ "2":
+ "<code>CliffordVector : Type</code><span class=\"sep\"></span><code class=\"docstring\">A 4\\-vector in Minkowski spacetime\\. </code>",
+ "19":
+ "<code>HMul.{u, v, w} (α : Type u) (β : Type v) (γ : outParam (Type w)) : Type (max (max u v) w)</code><span class=\"sep\"></span><code class=\"docstring\">The notation typeclass for heterogeneous multiplication.\nThis enables the notation `a * b : γ` where `a : α`, `b : β`.\n</code>",
+ "18": "<code>Add.mk.{u} {α : Type u} (add : α → α → α) : Add α</code>",
+ "17":
+ "<code>Add.{u} (α : Type u) : Type u</code><span class=\"sep\"></span><code class=\"docstring\">The homogeneous version of `HAdd`: `a + b : α` where `a b : α`. </code>",
+ "16":
+ "<code>CliffordVector.add (u v : CliffordVector) : CliffordVector</code><span class=\"sep\"></span><code class=\"docstring\">Vector addition\\. </code>",
+ "15": "<code>CliffordVector.mk (t x y z : Float) : CliffordVector</code>",
+ "14": "<code>Float</code>",
+ "13":
+ "<code>CliffordVector.smul (s : Float) (v : CliffordVector) : CliffordVector</code><span class=\"sep\"></span><code class=\"docstring\">Scalar multiplication\\. </code>",
+ "12": "<code>CliffordVector</code>",
+ "11":
+ "<code>CliffordVector.dot (u v : CliffordVector) : Float</code><span class=\"sep\"></span><code class=\"docstring\">Minkowski inner product with signature \\(\\-,\\+,\\+,\\+\\)\\. </code>",
+ "10":
+ "<code class=\"docstring\">`namespace &lt;id&gt;` opens a section with label `&lt;id&gt;` that influences naming and name resolution inside\nthe section:\n* Declarations names are prefixed: `def seventeen : ℕ := 17` inside a namespace `Nat` is given the\n  full name `Nat.seventeen`.\n* Names introduced by `export` declarations are also prefixed by the identifier.\n* All names starting with `&lt;id&gt;.` become available in the namespace without the prefix. These names\n  are preferred over names introduced by outer namespaces or `open`.\n* Within a namespace, declarations can be `protected`, which excludes them from the effects of\n  opening the namespace.\n\nAs with `section`, namespaces can be nested and the scope of a namespace is terminated by a\ncorresponding `end &lt;id&gt;` or the end of the file.\n\n`namespace` also acts like `section` in delimiting the scope of `variable`, `open`, and other scoped commands.\n</code>",
+ "1":
+ "<code>doc.verso</code><span class=\"sep\"></span><code class=\"docstring\">whether to use Verso syntax in docstrings</code>",
+ "0":
+ "<code class=\"docstring\">`set_option &lt;id&gt; &lt;value&gt;` sets the option `&lt;id&gt;` to `&lt;value&gt;`. Depending on the type of the option,\nthe value can be `true`, `false`, a string, or a numeral. Options are used to configure behavior of\nLean as well as user-defined extensions. The setting is active until the end of the current `section`\nor `namespace` or the end of the file.\nAuto-completion is available for `&lt;id&gt;` to list available options.\n\n`set_option &lt;id&gt; &lt;value&gt; in &lt;command&gt;` sets the option for just a single command:\n```\nset_option pp.all true in\n#check 1 + 1\n```\nSimilarly, `set_option &lt;id&gt; &lt;value&gt; in` can also be used inside terms and tactics to set an option\nonly in a single term or tactic.\n</code>"}

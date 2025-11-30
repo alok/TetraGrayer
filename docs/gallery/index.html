@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="color-scheme" content="light dark">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sakura.css/css/sakura-dark.css" type="text/css">
-    <title>TetraGrayer — TetraGrayer</title><base href="./"><style>:root {
+    <title>Gallery — TetraGrayer</title><base href=".././"><style>:root {
     /** Typography **/
     /* The font family used for headers, ToC entries, etc */
     --verso-structure-font-family: "Helvetica Neue","Segoe UI", "Roboto", Arial,sans-serif;
@@ -960,62 +960,69 @@ window.onload = () => {
         </div>
       </header>
     <main><h1>
-        TetraGrayer</h1>
+        Gallery</h1>
       <section>
         <h2>
-          A General Relativistic Ray Tracer in Lean 4</h2>
+          Rendered Images</h2>
         <p>
-          TetraGrayer is a Lean 4 port of <a href="https://github.com/muphrid15/tetra-gray">tetra-gray</a>,
-a general relativistic ray tracer that uses Clifford algebra and tetrads to trace
-light through curved spacetime around black holes.</p>
+          All images rendered using TetraGrayer on Apple M1 GPU via Metal.</p>
         <section>
           <h3>
-            Features</h3>
-          <ul>
-            <li>
-              <p>
-                <em>Physically accurate</em>: Traces null geodesics through Kerr (rotating) black hole spacetime</p>
-              </li>
-            <li>
-              <p>
-                <em>GPU accelerated</em>: Metal compute shaders with 241x speedup over CPU</p>
-              </li>
-            <li>
-              <p>
-                <em>Type safe</em>: Leverages Lean's dependent types for dimensional correctness</p>
-              </li>
-            <li>
-              <p>
-                <em>Multiple spacetimes</em>: Doran (Kerr), flat, and traversable wormhole</p>
-              </li>
-            </ul>
+            Gravitational Lensing</h3>
+          <p>
+            The classic view of gravitational lensing around a Kerr black hole.
+The colored quadrants show light rays from different celestial directions.</p>
+          <p>
+            <img src="static/doran-full.png" alt="Gravitational lensing around a Kerr black hole"></p>
+          <p>
+            The cyan sphere at the center represents the event horizon.
+Notice how light from behind the black hole is bent around it,
+creating the characteristic "Einstein ring" effect.</p>
           </section>
         <section>
           <h3>
-            Quick Start</h3>
-          <pre># Build
-lake build
-
-# Render on GPU (fast)
-./.lake/build/bin/tetragrayer metal-ffi
-
-# Render all demos
-./.lake/build/bin/tetragrayer demos
-
-# CPU rendering
-./.lake/build/bin/tetragrayer doran
-</pre></section>
-        <section>
-          <h3>
-            Gallery</h3>
+            Accretion Disk</h3>
           <p>
-            See the <a href="gallery">Gallery</a> for rendered images.</p>
+            A thin accretion disk around the black hole, rendered with
+temperature-based coloring (Doppler shift from orbital motion).</p>
+          <p>
+            <img src="static/demo-doran-disk.png" alt="Accretion disk rendering"></p>
           </section>
         <section>
           <h3>
-            Code Examples</h3>
+            Checkerboard Pattern</h3>
           <p>
-            See <a href="code">Code Examples</a> for type-checked Lean code.
+            A checkerboard celestial sphere helps visualize the distortion
+of the background by the black hole's gravity.</p>
+          <p>
+            <img src="static/demo-doran-checker.png" alt="Checkerboard celestial sphere"></p>
+          </section>
+        <section>
+          <h3>
+            Starfield</h3>
+          <p>
+            Random stars scattered across the celestial sphere,
+showing how gravitational lensing affects point sources.</p>
+          <p>
+            <img src="static/demo-doran-stars.png" alt="Starfield with gravitational lensing"></p>
+          </section>
+        <section>
+          <h3>
+            Traversable Wormhole</h3>
+          <p>
+            A Morris-Thorne traversable wormhole connecting two regions of spacetime.</p>
+          <p>
+            <img src="static/demo-wormhole.png" alt="Wormhole spacetime"></p>
+          </section>
+        <section>
+          <h3>
+            Performance</h3>
+          <p>
+            | Mode | Resolution | Time |
+|------|-----------|------|
+| CPU (Lean) | 1280x720 | ~24s |
+| GPU (Metal) | 1280x720 | ~0.1s |
+| <em>Speedup</em> | | <em>241x</em> |
 </p>
           </section>
         </section>

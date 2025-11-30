@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="color-scheme" content="light dark">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sakura.css/css/sakura-dark.css" type="text/css">
-    <title>TetraGrayer — TetraGrayer</title><base href="./"><style>:root {
+    <title>Code Examples — TetraGrayer</title><base href=".././"><style>:root {
     /** Typography **/
     /* The font family used for headers, ToC entries, etc */
     --verso-structure-font-family: "Helvetica Neue","Segoe UI", "Roboto", Arial,sans-serif;
@@ -960,64 +960,127 @@ window.onload = () => {
         </div>
       </header>
     <main><h1>
-        TetraGrayer</h1>
+        Code Examples</h1>
       <section>
         <h2>
-          A General Relativistic Ray Tracer in Lean 4</h2>
+          Lean Code Examples</h2>
         <p>
-          TetraGrayer is a Lean 4 port of <a href="https://github.com/muphrid15/tetra-gray">tetra-gray</a>,
-a general relativistic ray tracer that uses Clifford algebra and tetrads to trace
-light through curved spacetime around black holes.</p>
+          TetraGrayer is written entirely in Lean 4, leveraging its
+strong type system for physical correctness.</p>
         <section>
           <h3>
-            Features</h3>
-          <ul>
-            <li>
-              <p>
-                <em>Physically accurate</em>: Traces null geodesics through Kerr (rotating) black hole spacetime</p>
-              </li>
-            <li>
-              <p>
-                <em>GPU accelerated</em>: Metal compute shaders with 241x speedup over CPU</p>
-              </li>
-            <li>
-              <p>
-                <em>Type safe</em>: Leverages Lean's dependent types for dimensional correctness</p>
-              </li>
-            <li>
-              <p>
-                <em>Multiple spacetimes</em>: Doran (Kerr), flat, and traversable wormhole</p>
-              </li>
-            </ul>
+            Particle State</h3>
+          <p>
+            A photon is represented by its 4-position and 4-momentum in spacetime:</p>
+          <pre>/-- A particle (photon) with 4-position and 4-momentum. -/
+@[unbox]
+structure Particle where
+  /-- Spacetime position (t, x, y, z) -/
+  position : CliffordVector
+  /-- 4-momentum (E, px, py, pz) -/
+  momentum : CliffordVector
+deriving Repr, Inhabited
+</pre><p>
+            The <code>@[unbox]</code> attribute tells the compiler to unbox the struct for performance.</p>
           </section>
         <section>
           <h3>
-            Quick Start</h3>
-          <pre># Build
-lake build
-
-# Render on GPU (fast)
-./.lake/build/bin/tetragrayer metal-ffi
-
-# Render all demos
-./.lake/build/bin/tetragrayer demos
-
-# CPU rendering
-./.lake/build/bin/tetragrayer doran
+            Clifford Vectors</h3>
+          <p>
+            4-vectors use Clifford algebra representation:</p>
+          <pre>/-- A 4-component Clifford vector (basis: e₀, e₁, e₂, e₃). -/
+@[unbox]
+structure CliffordVector where
+  v0 : ℝ  -- t component (or e₀ coefficient)
+  v1 : ℝ  -- x component (or e₁ coefficient)
+  v2 : ℝ  -- y component (or e₂ coefficient)
+  v3 : ℝ  -- z component (or e₃ coefficient)
 </pre></section>
         <section>
           <h3>
-            Gallery</h3>
+            Doran Spacetime</h3>
           <p>
-            See the <a href="gallery">Gallery</a> for rendered images.</p>
-          </section>
+            The Kerr metric in Doran coordinates avoids coordinate singularities
+at the event horizon:</p>
+          <pre>/-- Compute geodesic RHS in Doran coordinates (Kerr black hole). -/
+def doranRHS (a : ℝ) (data : ODEData) : Particle :=
+  let pos := data.particle.position
+  let mom := data.particle.momentum
+
+  -- Spheroidal coordinates
+  let r := spheroidalR a pos
+  let θ := spheroidalθ a pos
+
+  -- Metric functions
+  let Σr := r^2 + a^2 * (cos θ)^2
+  let Δr := r^2 - 2*r + a^2
+
+  -- ... geodesic equation terms
+</pre></section>
         <section>
           <h3>
-            Code Examples</h3>
+            Type-Safe GPU Configuration</h3>
           <p>
-            See <a href="code">Code Examples</a> for type-checked Lean code.
-</p>
-          </section>
+            The Metal FFI uses dependent types to ensure validity:</p>
+          <pre>/-- Spin parameter constrained to [0, 1]. -/
+structure Spin where
+  val : Float
+  valid : 0 ≤ val ∧ val ≤ 1
+
+/-- Field of view constrained to (0, π). -/
+structure FOV where
+  val : Float
+  valid : 0 &lt; val ∧ val &lt; Float.pi
+</pre></section>
+        <section>
+          <h3>
+            RK4 Integration</h3>
+          <p>
+            Fourth-order Runge-Kutta for geodesic integration:</p>
+          <pre>/-- Single RK4 step for geodesic integration. -/
+def rk4Step (rhs : ODEData → Particle) (h : ℝ) (data : ODEData) : ODEData :=
+  let k₁ := rhs data
+  let k₂ := rhs (data.advance (h/2) (h/2 * k₁))
+  let k₃ := rhs (data.advance (h/2) (h/2 * k₂))
+  let k₄ := rhs (data.advance h (h * k₃))
+
+  let δparticle := (h/6) * (k₁ + 2*k₂ + 2*k₃ + k₄)
+  data.advance h δparticle
+</pre></section>
+        <section>
+          <h3>
+            Metal Shader Generation</h3>
+          <p>
+            MSL code is generated from Lean expressions using metaprogramming:</p>
+          <pre>/-- Generate MSL for an expression. -/
+partial def exprToMSLReduced (e : Expr) : MSLM String := do
+  let e ← whnf e
+
+  match e with
+  | .app (.app (.const ``HAdd.hAdd _) _) args =&gt;
+    let a ← exprToMSLReduced args[0]!
+    let b ← exprToMSLReduced args[1]!
+    withCSEAuto e do pure s!"({a} + {b})"
+
+  -- ... more patterns
+</pre></section>
+        <section>
+          <h3>
+            Common Subexpression Elimination</h3>
+          <p>
+            Generated shaders use CSE to avoid recomputing expressions:</p>
+          <pre>// Before CSE: many redundant sqrt calls
+float r = sqrt(x*x + y*y + z*z);
+float theta = atan2(sqrt(x*x + y*y), z);
+
+// After CSE: computed once, reused
+float cse1 = (x * x);
+float cse2 = (y * y);
+float cse3 = (cse1 + cse2);
+float cse4 = sqrt(cse3);
+float r = sqrt(cse3 + z*z);
+float theta = atan2(cse4, z);
+</pre></section>
         </section>
       </main><footer style="margin-top: 3em; padding-top: 1em; border-top: 1px solid #444;"><p>
         Built with <a href="https://github.com/leanprover/verso">Verso</a> and <a href="https://leanprover.github.io/">Lean 4</a></p>

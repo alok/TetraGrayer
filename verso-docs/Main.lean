@@ -1,11 +1,18 @@
 /-
 TetraGrayer Documentation Site Generator
+
+Uses Verso's literate Lean feature for proper syntax highlighting.
 -/
 import VersoBlog
 import TetraGrayerDocs
+import TetraGrayerDocs.LitParticle
 
 open Verso Genre Blog Site Syntax
 open Output Html Template Theme
+
+-- Import literate Lean module with proper syntax highlighting
+-- Uses `set_option doc.verso true` for SubVerso highlighting
+literate_page particleDocs from TetraGrayerDocs.LitParticle in "." as "Particle Types"
 
 def theme : Theme := { Theme.default with
   primaryTemplate := do
@@ -56,5 +63,6 @@ def tetraGrayerSite : Site := site TetraGrayerDocs.Front /
   static "static" ← "static"
   "gallery" TetraGrayerDocs.Gallery
   "code" TetraGrayerDocs.Code
+  "particle" particleDocs
 
 def main := blogMain theme tetraGrayerSite
