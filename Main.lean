@@ -87,6 +87,56 @@ def renderMetalIdiomatic : IO Unit := do
   | .renderFailed code =>
     IO.eprintln s!"  Metal render failed with code {code}"
 
+/-- Benchmark comparing CPU vs GPU rendering. -/
+def benchmarkCpuGpu : IO Unit := do
+  IO.println "=== CPU vs GPU Benchmark ==="
+  IO.println ""
+
+  let cam := { CameraParams.default 640 360 with
+    position := CliffordVector.mk4 0.0 20.0 0.0 0.0
+    hFov := π / 2.0
+    dparam := 0.05 }
+  let params := DoranParams.mk 0.5 50.0 500.0 40.0 50000
+
+  -- CPU Render
+  IO.println "Running CPU render (640x360)..."
+  let startCpu ← IO.monoNanosNow
+  renderDoran "artifacts/bench-cpu.ppm" cam params
+  let endCpu ← IO.monoNanosNow
+  let cpuTime := (endCpu - startCpu).toFloat / 1e9
+
+  -- GPU Render
+  IO.println "Running GPU render (640x360)..."
+  let config : Metal.RenderConfig := {
+    dims := { width := 640, height := 360, width_pos := by decide, height_pos := by decide }
+    doran := { Metal.DoranConfig.moderate with
+      extractRadius := 50.0
+      maxParam := 500.0
+      maxStepRatio := 40.0
+      maxSteps := 50000
+      dparam0 := 0.05
+    }
+    camera := { Metal.CameraPos.atDistance 20.0 with t := 0.0 }
+  }
+
+  let startGpu ← IO.monoNanosNow
+  let result ← Metal.render config
+  let endGpu ← IO.monoNanosNow
+  let gpuTime := (endGpu - startGpu).toFloat / 1e9
+
+  match result with
+  | .ok img =>
+    img.writePPM "artifacts/bench-gpu.ppm"
+  | _ =>
+    IO.eprintln "  GPU render failed"
+
+  IO.println ""
+  IO.println "=== Results ==="
+  IO.println s!"  CPU: {cpuTime} s"
+  IO.println s!"  GPU: {gpuTime} s"
+  let speedup := cpuTime / gpuTime
+  IO.println s!"  Speedup: {speedup}x"
+
 /-- Benchmark comparing standard vs fused RK4 -/
 def benchmarkFusion : IO Unit := do
   let cam := { CameraParams.default 1280 720 with
@@ -165,6 +215,10 @@ def main (args : List String) : IO Unit := do
   | "bench" =>
     -- A/B benchmark for loop fusion
     benchmarkFusion
+
+  | "cpu-gpu" =>
+    -- CPU vs GPU benchmark
+    benchmarkCpuGpu
 
   | "metal" =>
     -- Render using Metal GPU

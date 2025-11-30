@@ -137,6 +137,14 @@ def MSLStruct.toMSL (s : MSLStruct) : String :=
 -- Expression Translation Context
 -- ============================================================================
 
+/-- CSE cache entry: stores original expression and assigned variable name. -/
+structure CSEEntry where
+  /-- The original expression (for collision checking). -/
+  expr : Expr
+  /-- The assigned MSL variable name. -/
+  varName : String
+deriving Inhabited
+
 /-- Context for MSL translation. -/
 structure MSLContext where
   /-- Mapping from FVarId to MSL variable names. -/
@@ -147,6 +155,12 @@ structure MSLContext where
   statements : Array String := #[]
   /-- Indentation level. -/
   indent : Nat := 1
+  /-- CSE cache: hash → (expr, varName). Used to avoid duplicate computations. -/
+  cseCache : Std.HashMap UInt64 (Array CSEEntry) := {}
+  /-- Whether CSE is enabled (default true). -/
+  cseEnabled : Bool := true
+  /-- Minimum expression size for CSE (avoid caching trivial expressions). -/
+  cseMinSize : Nat := 3
 deriving Inhabited
 
 /-- MSL translation monad. -/
@@ -178,6 +192,67 @@ def addStatement (stmt : String) : MSLM Unit := do
 def getIndent : MSLM String := do
   let ctx ← get
   return String.mk (List.replicate (ctx.indent * 4) ' ')
+
+-- ============================================================================
+-- Common Subexpression Elimination (CSE)
+-- ============================================================================
+
+/-- Compute approximate size of an expression (for CSE threshold). -/
+partial def exprSize : Expr → Nat
+  | .app f a => 1 + exprSize f + exprSize a
+  | .lam _ ty body _ => 1 + exprSize ty + exprSize body
+  | .forallE _ ty body _ => 1 + exprSize ty + exprSize body
+  | .letE _ ty val body _ => 1 + exprSize ty + exprSize val + exprSize body
+  | .mdata _ e => exprSize e
+  | .proj _ _ e => 1 + exprSize e
+  | _ => 1
+
+/-- Look up an expression in the CSE cache. Uses hash + structural equality. -/
+def lookupCSE (e : Expr) : MSLM (Option String) := do
+  let ctx ← get
+  if !ctx.cseEnabled then return none
+  let hash := e.hash
+  match ctx.cseCache[hash]? with
+  | none => return none
+  | some entries =>
+    -- Check for structural match (handle hash collisions)
+    for entry in entries do
+      if entry.expr == e then
+        return some entry.varName
+    return none
+
+/-- Insert an expression into the CSE cache. -/
+def insertCSE (e : Expr) (varName : String) : MSLM Unit := do
+  let ctx ← get
+  if !ctx.cseEnabled then return
+  let hash := e.hash
+  let entry : CSEEntry := { expr := e, varName := varName }
+  let newEntries := match ctx.cseCache[hash]? with
+    | none => #[entry]
+    | some entries => entries.push entry
+  set { ctx with cseCache := ctx.cseCache.insert hash newEntries }
+
+/-- Translate with CSE: check cache first, emit let binding if new, cache result.
+    Returns the variable name (cached or newly created).
+    Only caches expressions above the size threshold. -/
+def withCSE (e : Expr) (mslType : String) (translate : MSLM String) : MSLM String := do
+  let ctx ← get
+  -- Skip CSE for small expressions
+  if !ctx.cseEnabled || exprSize e < ctx.cseMinSize then
+    translate
+  else
+    -- Check cache
+    match ← lookupCSE e with
+    | some varName => return varName
+    | none =>
+      -- Translate and cache
+      let mslExpr ← translate
+      -- Create a let binding for the result
+      let varName ← freshVar "cse"
+      let indent ← getIndent
+      addStatement s!"{indent}{mslType} {varName} = {mslExpr};"
+      insertCSE e varName
+      return varName
 
 /-- Check if needle is a substring of haystack. -/
 def stringContains (needle haystack : String) : Bool :=
@@ -391,6 +466,12 @@ def inferMSLType (ty : Expr) : MetaM String := do
   | .app (.const name _) _ => return leanTypeToMSL name
   | _ => return "float"  -- Default fallback
 
+/-- CSE with automatic type inference from expression. -/
+def withCSEAuto (e : Expr) (translate : MSLM String) : MSLM String := do
+  let ty ← inferType e
+  let mslType ← inferMSLType ty
+  withCSE e mslType translate
+
 mutual
 /-- Translate a Lean expression to MSL. Preserves let bindings and ite. -/
 partial def exprToMSL (e : Expr) : MSLM String := do
@@ -467,26 +548,29 @@ partial def exprToMSLReduced (e : Expr) : MSLM String := do
     let bStr ← exprToMSL b
     return s!"({aStr} {op} {bStr})"
 
-  -- Try binary operator
+  -- Try binary operator (with CSE + auto type inference)
   if let some (op, a, b) := asBinaryOp e then
-    let aStr ← exprToMSL a
-    let bStr ← exprToMSL b
-    return s!"({aStr} {op} {bStr})"
+    return ← withCSEAuto e do
+      let aStr ← exprToMSL a
+      let bStr ← exprToMSL b
+      return s!"({aStr} {op} {bStr})"
 
-  -- Try unary operator
+  -- Try unary operator (with CSE + auto type inference)
   if let some (op, a) := asUnaryOp e then
-    let aStr ← exprToMSL a
-    return s!"({op}{aStr})"
+    return ← withCSEAuto e do
+      let aStr ← exprToMSL a
+      return s!"({op}{aStr})"
 
-  -- Try function call
+  -- Try function call (with CSE + auto type inference)
   if let some (func, args) := asFuncCall e then
-    let argStrs ← args.mapM exprToMSL
-    let argsStr := String.intercalate ", " argStrs.toList
-    if func.startsWith "(" then
-      -- Cast operation
-      return s!"{func}({argsStr})"
-    else
-      return s!"{func}({argsStr})"
+    return ← withCSEAuto e do
+      let argStrs ← args.mapM exprToMSL
+      let argsStr := String.intercalate ", " argStrs.toList
+      if func.startsWith "(" then
+        -- Cast operation
+        return s!"{func}({argsStr})"
+      else
+        return s!"{func}({argsStr})"
 
   -- Try Float.ofScientific (before struct constructor check)
   let (fn, args) := collectAppArgs e
@@ -500,12 +584,13 @@ partial def exprToMSLReduced (e : Expr) : MSLM String := do
           mantissa.toFloat * (10 : Float) ^ exp.toFloat
         return s!"{value}"
 
-  -- Try struct constructor
+  -- Try struct constructor (with CSE + auto type inference)
   if let some (structName, args) := ← asStructCtor e then
-    let argStrs ← args.mapM exprToMSL
-    let argsStr := String.intercalate ", " argStrs.toList
     let mslName := leanTypeToMSL structName
-    return s!"({mslName})\{{argsStr}}"
+    return ← withCSEAuto e do
+      let argStrs ← args.mapM exprToMSL
+      let argsStr := String.intercalate ", " argStrs.toList
+      return s!"({mslName})\{{argsStr}}"
 
   match e with
   -- Literals

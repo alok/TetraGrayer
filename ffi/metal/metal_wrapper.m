@@ -55,8 +55,13 @@ int metal_init(void) {
             NSString *execPath = [[NSBundle mainBundle] executablePath];
             NSString *execDir = [execPath stringByDeletingLastPathComponent];
 
-            // Try various paths
+            // Try various paths - prefer generated shader from artifacts/
             NSArray *searchPaths = @[
+                // Generated shader (preferred - auto-generated from Lean)
+                @"artifacts/raytracer.metal",
+                @"./artifacts/raytracer.metal",
+                [execDir stringByAppendingPathComponent:@"../../../artifacts/raytracer.metal"],
+                // Fallback to hand-written shader
                 [execDir stringByAppendingPathComponent:@"../../../ffi/metal/raytracer.metal"],
                 [execDir stringByAppendingPathComponent:@"../../ffi/metal/raytracer.metal"],
                 [execDir stringByAppendingPathComponent:@"ffi/metal/raytracer.metal"],
@@ -94,10 +99,14 @@ int metal_init(void) {
             }
         }
 
-        // Get the kernel function
-        id<MTLFunction> kernelFunction = [g_library newFunctionWithName:@"raytrace_kernel"];
+        // Get the kernel function - try generated name first, then fallback
+        id<MTLFunction> kernelFunction = [g_library newFunctionWithName:@"raytrace_doran"];
         if (!kernelFunction) {
-            NSLog(@"Failed to find raytrace_kernel function");
+            // Fallback to hand-written shader's function name
+            kernelFunction = [g_library newFunctionWithName:@"raytrace_kernel"];
+        }
+        if (!kernelFunction) {
+            NSLog(@"Failed to find raytrace_doran or raytrace_kernel function");
             return -6;
         }
 
