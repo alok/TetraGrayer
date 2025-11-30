@@ -1,0 +1,17 @@
+name = "tetragrayer-docs"
+version = "0.1.0"
+defaultTargets = ["TetraGrayerDocs", "generate-docs"]
+
+[[require]]
+name = "verso"
+git = "https://github.com/leanprover/verso.git"
+rev = "v4.25.0"
+
+# The content of the documentation is in this Lean library
+[[lean_lib]]
+name = "TetraGrayerDocs"
+
+# The content is linked into an executable that generates HTML
+[[lean_exe]]
+name = "generate-docs"
+root = "Main"
