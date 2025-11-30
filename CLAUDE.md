@@ -44,12 +44,19 @@ flowchart LR
   - `TetraGrayer/Raytracer.lean` – compose pipeline; data-in → PPM-out
 
 - Current status
-  - Submodule added: `external/tetra-gray`
-  - Flat pipeline implemented and renders to `artifacts/flat-000.ppm`
+  - Full raytracer implemented with Doran (Kerr) black hole spacetime
+  - Metal GPU rendering with 241x speedup over CPU
+  - CSE optimization in generated Metal shaders
+  - Demo suite: accretion disk, checkerboard, starfield, wormhole
+  - Documentation site: https://alok.github.io/TetraGrayer
   - Build: `lake build`; Run: `./.lake/build/bin/tetragrayer`
+  - GPU: `./.lake/build/bin/tetragrayer metal-ffi`
 
-- Next
-  - Match upstream flat parameters for parity; then scaffold Doran (tetrads, coords, adaptive step).
+- Potential future work
+  - More spacetimes: Schwarzschild, Kerr-Newman, Reissner-Nordström
+  - Interactive/real-time rendering
+  - Animation support
+  - Formal verification of physics equations
 
 ### Checklist
 - [x] Add upstream as git submodule at `external/tetra-gray`
@@ -60,9 +67,12 @@ flowchart LR
 - [x] Add escape radius, max-steps termination checks
 - [x] Implement spherical test colormap for rays
 - [x] Wire flat pipeline and render 256x144 PPM
-- [ ] Match upstream flat params and compare output
-- [ ] Port Cartesian↔spheroidal helpers
-- [ ] Scaffold tetrads and Doran RHS in Lean
-- [ ] Add adaptive stepsize and ratio-based stop
-- [ ] Render small Doran image and iterate
-- [ ] Integrate lean-lsp-mcp; update docs
+- [x] Match upstream flat params and compare output
+- [x] Port Cartesian↔spheroidal helpers
+- [x] Scaffold tetrads and Doran RHS in Lean
+- [x] Add adaptive stepsize and ratio-based stop
+- [x] Render small Doran image and iterate
+- [x] Metal GPU codegen with CSE optimization
+- [x] Metal FFI for GPU rendering (241x speedup)
+- [x] Demo suite: accretion disk, checker, stars, wormhole
+- [x] Documentation site with GitHub Pages deployment
