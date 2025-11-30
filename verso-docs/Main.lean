@@ -21,19 +21,19 @@ def theme : Theme := { Theme.default with
         <head>
           <meta charset="utf-8"/>
           <meta name="viewport" content="width=device-width, initial-scale=1"/>
-          <meta name="color-scheme" content="light dark"/>
-          <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sakura.css/css/sakura-dark.css" type="text/css"/>
+          <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sakura.css/css/sakura.css" type="text/css"/>
           <title>{{ (← param (α := String) "title") }} " — TetraGrayer"</title>
           {{← builtinHeader }}
           <style>
             "body { max-width: 900px; }"
-            "img { max-width: 100%; height: auto; border-radius: 8px; margin: 1em 0; }"
-            "pre { background: #1a1a2e; padding: 1em; border-radius: 8px; overflow-x: auto; }"
-            "code { font-family: 'SF Mono', monospace; }"
+            "img { max-width: 100%; height: auto; border-radius: 8px; margin: 1em 0; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }"
+            "pre { background: #f5f5f5; padding: 1em; border-radius: 8px; overflow-x: auto; }"
+            "code { font-family: 'SF Mono', 'Consolas', monospace; }"
             "table { width: 100%; border-collapse: collapse; }"
-            "th, td { padding: 0.5em; border: 1px solid #444; }"
+            "th, td { padding: 0.5em; border: 1px solid #ddd; }"
             ".nav { display: flex; gap: 2em; margin: 1em 0; }"
-            ".nav a { color: #7dd3fc; }"
+            ".nav a { color: #1d4ed8; }"
+            "h1 { color: #1e293b; }"
           </style>
         </head>
         <body>
@@ -46,7 +46,7 @@ def theme : Theme := { Theme.default with
           <main>
             {{ (← param "content") }}
           </main>
-          <footer style="margin-top: 3em; padding-top: 1em; border-top: 1px solid #444;">
+          <footer style="margin-top: 3em; padding-top: 1em; border-top: 1px solid #ddd; color: #666;">
             <p>
               "Built with "
               <a href="https://github.com/leanprover/verso">"Verso"</a>
