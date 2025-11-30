@@ -1,0 +1,423 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TetraGrayer - General Relativistic Ray Tracer</title>
+    <style>
+        :root {
+            --bg-dark: #0a0a0f;
+            --bg-card: #12121a;
+            --text-primary: #e8e8e8;
+            --text-secondary: #a0a0a0;
+            --accent: #6366f1;
+            --accent-glow: rgba(99, 102, 241, 0.3);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+            background: var(--bg-dark);
+            color: var(--text-primary);
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+
+        header {
+            padding: 60px 0;
+            text-align: center;
+            background: linear-gradient(180deg, #0f0f18 0%, var(--bg-dark) 100%);
+        }
+
+        h1 {
+            font-size: 3.5rem;
+            font-weight: 700;
+            margin-bottom: 10px;
+            background: linear-gradient(135deg, #fff 0%, #6366f1 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .tagline {
+            font-size: 1.3rem;
+            color: var(--text-secondary);
+            margin-bottom: 30px;
+        }
+
+        .hero-image {
+            max-width: 100%;
+            border-radius: 12px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5), 0 0 40px var(--accent-glow);
+            margin: 20px 0;
+        }
+
+        .features {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 20px;
+            padding: 60px 0;
+        }
+
+        .feature {
+            background: var(--bg-card);
+            padding: 30px;
+            border-radius: 12px;
+            border: 1px solid rgba(255,255,255,0.05);
+        }
+
+        .feature h3 {
+            color: var(--accent);
+            margin-bottom: 10px;
+            font-size: 1.2rem;
+        }
+
+        .feature p {
+            color: var(--text-secondary);
+        }
+
+        .gallery {
+            padding: 60px 0;
+        }
+
+        .gallery h2 {
+            text-align: center;
+            font-size: 2.5rem;
+            margin-bottom: 40px;
+        }
+
+        .gallery-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 30px;
+        }
+
+        .gallery-item {
+            background: var(--bg-card);
+            border-radius: 12px;
+            overflow: hidden;
+            border: 1px solid rgba(255,255,255,0.05);
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+
+        .gallery-item:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 40px rgba(99, 102, 241, 0.2);
+        }
+
+        .gallery-item img {
+            width: 100%;
+            display: block;
+        }
+
+        .gallery-item .caption {
+            padding: 20px;
+        }
+
+        .gallery-item h4 {
+            margin-bottom: 8px;
+        }
+
+        .gallery-item p {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+        }
+
+        .performance {
+            padding: 60px 0;
+            text-align: center;
+        }
+
+        .performance h2 {
+            font-size: 2.5rem;
+            margin-bottom: 40px;
+        }
+
+        .benchmark {
+            display: flex;
+            justify-content: center;
+            gap: 60px;
+            flex-wrap: wrap;
+        }
+
+        .benchmark-item {
+            text-align: center;
+        }
+
+        .benchmark-value {
+            font-size: 4rem;
+            font-weight: 700;
+            color: var(--accent);
+        }
+
+        .benchmark-label {
+            color: var(--text-secondary);
+            font-size: 1.1rem;
+        }
+
+        .speedup {
+            font-size: 5rem;
+            background: linear-gradient(135deg, #22c55e 0%, #6366f1 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .tech {
+            padding: 60px 0;
+            background: var(--bg-card);
+        }
+
+        .tech h2 {
+            text-align: center;
+            font-size: 2.5rem;
+            margin-bottom: 40px;
+        }
+
+        .tech-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+        }
+
+        .tech-item {
+            padding: 20px;
+            background: var(--bg-dark);
+            border-radius: 8px;
+        }
+
+        .tech-item h4 {
+            color: var(--accent);
+            margin-bottom: 8px;
+        }
+
+        .tech-item p {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+        }
+
+        .code-section {
+            padding: 60px 0;
+        }
+
+        .code-section h2 {
+            text-align: center;
+            font-size: 2.5rem;
+            margin-bottom: 40px;
+        }
+
+        pre {
+            background: var(--bg-card);
+            padding: 30px;
+            border-radius: 12px;
+            overflow-x: auto;
+            border: 1px solid rgba(255,255,255,0.05);
+        }
+
+        code {
+            font-family: 'SF Mono', 'Fira Code', monospace;
+            font-size: 0.9rem;
+            color: #a5b4fc;
+        }
+
+        footer {
+            padding: 40px 0;
+            text-align: center;
+            color: var(--text-secondary);
+            border-top: 1px solid rgba(255,255,255,0.05);
+        }
+
+        footer a {
+            color: var(--accent);
+            text-decoration: none;
+        }
+
+        .github-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: var(--accent);
+            color: white;
+            padding: 12px 24px;
+            border-radius: 8px;
+            text-decoration: none;
+            font-weight: 600;
+            margin-top: 20px;
+            transition: opacity 0.2s;
+        }
+
+        .github-link:hover {
+            opacity: 0.9;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="container">
+            <h1>TetraGrayer</h1>
+            <p class="tagline">General Relativistic Ray Tracer in Lean 4</p>
+            <img src="static/images/doran-full.png" alt="Kerr Black Hole" class="hero-image">
+            <a href="https://github.com/alokbeniwal/TetraGrayer" class="github-link">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z"/>
+                </svg>
+                View on GitHub
+            </a>
+        </div>
+    </header>
+
+    <section class="features">
+        <div class="container">
+            <div class="feature">
+                <h3>Kerr Black Holes</h3>
+                <p>Rotating black holes with accurate gravitational lensing using Doran coordinates.</p>
+            </div>
+            <div class="feature">
+                <h3>Ellis Wormholes</h3>
+                <p>Traversable tunnels through spacetime connecting distant regions.</p>
+            </div>
+            <div class="feature">
+                <h3>Accretion Disks</h3>
+                <p>Glowing matter with temperature profiles and Doppler-shifted colors.</p>
+            </div>
+            <div class="feature">
+                <h3>GPU Acceleration</h3>
+                <p>Metal compute shaders for 241x speedup on Apple Silicon.</p>
+            </div>
+            <div class="feature">
+                <h3>Lean 4 Metaprogramming</h3>
+                <p>Auto-generate GPU shaders from pure functional Lean code.</p>
+            </div>
+            <div class="feature">
+                <h3>Clifford Algebra</h3>
+                <p>Proper 4D orientation handling with tetrad rotations.</p>
+            </div>
+        </div>
+    </section>
+
+    <section class="gallery">
+        <div class="container">
+            <h2>Gallery</h2>
+            <div class="gallery-grid">
+                <div class="gallery-item">
+                    <img src="static/images/demo-doran-disk.png" alt="Accretion Disk">
+                    <div class="caption">
+                        <h4>Accretion Disk</h4>
+                        <p>Glowing disk with temperature-dependent colors. Approaching matter is blueshifted, receding matter is redshifted.</p>
+                    </div>
+                </div>
+                <div class="gallery-item">
+                    <img src="static/images/demo-doran-standard.png" alt="Gravitational Lensing">
+                    <div class="caption">
+                        <h4>Gravitational Lensing</h4>
+                        <p>Light bends around the black hole, creating characteristic distortions of the celestial sphere.</p>
+                    </div>
+                </div>
+                <div class="gallery-item">
+                    <img src="static/images/demo-doran-checker.png" alt="Checkerboard">
+                    <div class="caption">
+                        <h4>Checkerboard Pattern</h4>
+                        <p>A checkerboard background reveals the precise warping of spacetime geometry.</p>
+                    </div>
+                </div>
+                <div class="gallery-item">
+                    <img src="static/images/demo-doran-stars.png" alt="Starfield">
+                    <div class="caption">
+                        <h4>Starfield Background</h4>
+                        <p>Stars appear distorted and duplicated due to multiple light paths around the black hole.</p>
+                    </div>
+                </div>
+                <div class="gallery-item">
+                    <img src="static/images/demo-wormhole.png" alt="Wormhole">
+                    <div class="caption">
+                        <h4>Ellis Wormhole</h4>
+                        <p>A traversable wormhole connecting two regions of spacetime. Light travels through the throat.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="performance">
+        <div class="container">
+            <h2>Performance</h2>
+            <div class="benchmark">
+                <div class="benchmark-item">
+                    <div class="benchmark-value">24.16s</div>
+                    <div class="benchmark-label">CPU (8-core)</div>
+                </div>
+                <div class="benchmark-item">
+                    <div class="benchmark-value">0.10s</div>
+                    <div class="benchmark-label">GPU (Metal)</div>
+                </div>
+                <div class="benchmark-item">
+                    <div class="speedup">241x</div>
+                    <div class="benchmark-label">Speedup</div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="tech">
+        <div class="container">
+            <h2>Technical Details</h2>
+            <div class="tech-grid">
+                <div class="tech-item">
+                    <h4>Doran Coordinates</h4>
+                    <p>Horizon-penetrating coordinates for the Kerr metric, regular everywhere outside the ring singularity.</p>
+                </div>
+                <div class="tech-item">
+                    <h4>RK4 Integration</h4>
+                    <p>Fourth-order Runge-Kutta with adaptive step sizing based on gravitational blueshift.</p>
+                </div>
+                <div class="tech-item">
+                    <h4>CSE Optimization</h4>
+                    <p>Common Subexpression Elimination in Metal shader codegen for efficient GPU execution.</p>
+                </div>
+                <div class="tech-item">
+                    <h4>Tetrad Formalism</h4>
+                    <p>Local Lorentz frames for proper handling of photon 4-momentum in curved spacetime.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="code-section">
+        <div class="container">
+            <h2>Getting Started</h2>
+            <pre><code># Clone the repository
+git clone https://github.com/alokbeniwal/TetraGrayer
+cd TetraGrayer
+
+# Build with Lake
+lake build
+
+# Run all demos
+./.lake/build/bin/tetragrayer demos
+
+# GPU benchmark (requires Apple Silicon)
+./.lake/build/bin/tetragrayer cpu-gpu
+
+# Metal GPU render
+./.lake/build/bin/tetragrayer metal-ffi</code></pre>
+        </div>
+    </section>
+
+    <footer>
+        <div class="container">
+            <p>Built with Lean 4 and Metal</p>
+            <p>Ported from <a href="https://github.com/muphrid15/tetra-gray">tetra-gray</a></p>
+        </div>
+    </footer>
+</body>
+</html>
