@@ -76,4 +76,4 @@ lake build
 
 # Code
 
-See {page_link TetraGrayerDocs.Code}[Code Examples] for the Lean implementation.
+See {page_link codeDocs}[Code Examples] for the Lean implementation.
