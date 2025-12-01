@@ -1,0 +1,246 @@
+{"99":
+ "<code>WormholeParams.standard : WormholeParams</code><span class=\"sep\"></span><code class=\"docstring\">Standard wormhole with unit throat radius\\. </code>",
+ "98":
+ "<code>passedThrough (zNow zPrev rNow a : Float) : Bool</code><span class=\"sep\"></span><code class=\"docstring\">Check if a ray passed through the wormhole throat\\. </code>",
+ "97":
+ "<code>bendingFactor (a l : Float) : Float</code><span class=\"sep\"></span><code class=\"docstring\">Compute the bending factor near the throat\\. </code>",
+ "96":
+ "<code>Max.max.{u} {α : Type u} [self : Max α] : α → α → α</code><span class=\"sep\"></span><code class=\"docstring\">Returns the greater of its two arguments. </code>",
+ "95":
+ "<code>ellisFromCartesian (a x y z : Float) : Float × Float × Float</code><span class=\"sep\"></span><code class=\"docstring\">Convert Cartesian position to Ellis coordinates \\(l, θ, φ\\)\\. </code>",
+ "94":
+ "<code>effectiveRadius (a l : Float) : Float</code><span class=\"sep\"></span><code class=\"docstring\">Compute the effective radius at coordinate l\\. </code>",
+ "93":
+ "<code>WormholeParams.extractRadius (self : WormholeParams) : Float</code><span class=\"sep\"></span><code class=\"docstring\">Extraction sphere radius for ray termination </code>",
+ "92":
+ "<code>WormholeParams.throatRadius (self : WormholeParams) : Float</code><span class=\"sep\"></span><code class=\"docstring\">Throat radius \\- the minimum \"waist\" of the wormhole </code>",
+ "91":
+ "<code>WormholeParams : Type</code><span class=\"sep\"></span><code class=\"docstring\">Wormhole configuration parameters\\. </code>",
+ "90":
+ "<code>Particle.add (p q : Particle) : Particle</code><span class=\"sep\"></span><code class=\"docstring\">Addition for RK4\\. </code>",
+ "9":
+ "<code>sigma (r a theta : Float) : Float</code><span class=\"sep\"></span><code class=\"docstring\">Sigma function for Kerr metric\\. </code>",
+ "89": "<code>Particle</code>",
+ "88":
+ "<code>Particle.smul (s : Float) (p : Particle) : Particle</code><span class=\"sep\"></span><code class=\"docstring\">Scalar multiplication for RK4\\. </code>",
+ "87": "<code>Particle.mk (pos mom : CliffordVector) : Particle</code>",
+ "86":
+ "<code>examplePhoton : Particle</code><span class=\"sep\"></span><code class=\"docstring\">A photon at the origin moving in the z direction\\. </code>",
+ "85":
+ "<code>Particle.mom (self : Particle) : CliffordVector</code><span class=\"sep\"></span><code class=\"docstring\">4\\-momentum \\(null for photons\\) </code>",
+ "84":
+ "<code>Particle.pos (self : Particle) : CliffordVector</code><span class=\"sep\"></span><code class=\"docstring\">4\\-position in spacetime </code>",
+ "83":
+ "<code>Particle : Type</code><span class=\"sep\"></span><code class=\"docstring\">A particle in spacetime with position and momentum\\. </code>",
+ "82":
+ "<code>photonNorm : Float</code><span class=\"sep\"></span><code class=\"docstring\">Compute the norm of the photon momentum \\(should be 0 for null vector\\)\\. </code>",
+ "81":
+ "<code>photonMomentum : CliffordVector</code><span class=\"sep\"></span><code class=\"docstring\">Example 4\\-momentum for an outward\\-going photon\\. </code>",
+ "80":
+ "<code>origin : CliffordVector</code><span class=\"sep\"></span><code class=\"docstring\">Example 4\\-position vector at the origin\\. </code>",
+ "8":
+ "<code>Float.acos : Float → Float</code><span class=\"sep\"></span><code class=\"docstring\">Computes the arc cosine (inverse cosine) of a floating-point number in radians.\n\nThis function does not reduce in the kernel. It is implemented in compiled code by the C function\n`acos`.\n</code>",
+ "79":
+ "<code>CliffordVector.add (u v : CliffordVector) : CliffordVector</code><span class=\"sep\"></span><code class=\"docstring\">Vector addition\\. </code>",
+ "78": "<code>CliffordVector.mk (t x y z : Float) : CliffordVector</code>",
+ "77":
+ "<code>CliffordVector.smul (s : Float) (v : CliffordVector) : CliffordVector</code><span class=\"sep\"></span><code class=\"docstring\">Scalar multiplication\\. </code>",
+ "76": "<code>CliffordVector</code>",
+ "75":
+ "<code>CliffordVector.dot (u v : CliffordVector) : Float</code><span class=\"sep\"></span><code class=\"docstring\">Minkowski inner product with signature \\(\\-,\\+,\\+,\\+\\)\\. </code>",
+ "74":
+ "<code>Inhabited.{u} (α : Sort u) : Sort (max 1 u)</code><span class=\"sep\"></span><code class=\"docstring\">`Inhabited α` is a typeclass that says that `α` has a designated element,\ncalled `(default : α)`. This is sometimes referred to as a \"pointed type\".\n\nThis class is used by functions that need to return a value of the type\nwhen called \"out of domain\". For example, `Array.get! arr i : α` returns\na value of type `α` when `arr : Array α`, but if `i` is not in range of\nthe array, it reports a panic message, but this does not halt the program,\nso it must still return a value of type `α` (and in fact this is required\nfor logical consistency), so in this case it returns `default`.\n</code>",
+ "73":
+ "<code>CliffordVector.z (self : CliffordVector) : Float</code><span class=\"sep\"></span><code class=\"docstring\">z spatial component </code>",
+ "72":
+ "<code>CliffordVector.y (self : CliffordVector) : Float</code><span class=\"sep\"></span><code class=\"docstring\">y spatial component </code>",
+ "71":
+ "<code>CliffordVector.x (self : CliffordVector) : Float</code><span class=\"sep\"></span><code class=\"docstring\">x spatial component </code>",
+ "70":
+ "<code>CliffordVector.t (self : CliffordVector) : Float</code><span class=\"sep\"></span><code class=\"docstring\">Time component </code>",
+ "7":
+ "<code>spheroidalTheta (a r z : Float) : Float</code><span class=\"sep\"></span><code class=\"docstring\">Spheroidal angle theta\\. </code>",
+ "69":
+ "<code>CliffordVector : Type</code><span class=\"sep\"></span><code class=\"docstring\">A 4\\-vector in Minkowski spacetime\\. </code>",
+ "68":
+ "<code class=\"docstring\">`return e` inside of a `do` block makes the surrounding block evaluate to `pure e`,\nskipping any further statements.\nNote that uses of the `do` keyword in other syntax like in `for _ in _ do`\ndo not constitute a surrounding block in this sense;\nin supported editors, the corresponding `do` keyword of the surrounding block\nis highlighted when hovering over `return`.\n\n`return` not followed by a term starting on the same line is equivalent to `return ()`.\n</code>",
+ "67":
+ "<code class=\"docstring\">`for x in e do s`  iterates over `e` assuming `e`'s type has an instance of the `ForIn` typeclass.\n`break` and `continue` are supported inside `for` loops.\n`for x in e, x2 in e2, ... do s` iterates of the given collections in parallel,\nuntil at least one of them is exhausted.\nThe types of `e2` etc. must implement the `Std.ToStream` typeclass.\n</code>",
+ "66":
+ "<code>Id.run.{u_1} {α : Type u_1} (x : Id α) : α</code><span class=\"sep\"></span><code class=\"docstring\">Runs a computation in the identity monad.\n\nThis function is the identity function. Because its parameter has type `Id α`, it causes\n`do`-notation in its arguments to use the `Monad Id` instance.\n</code>",
+ "65":
+ "<code>Nat : Type</code><span class=\"sep\"></span><code class=\"docstring\">The natural numbers, starting at zero.\n\nThis type is special-cased by both the kernel and the compiler, and overridden with an efficient\nimplementation. Both use a fast arbitrary-precision arithmetic library (usually\n[GMP](https://gmplib.org/)); at runtime, `Nat` values that are sufficiently small are unboxed.\n</code>",
+ "64": "<code>Nat</code>",
+ "63":
+ "<code>traceRay (rhs : GeodesicState → GeodesicState) (h escapeR horizonR : Float) (maxSteps : Nat) (state : GeodesicState) :\n  GeodesicState</code><span class=\"sep\"></span><code class=\"docstring\">Integrate a geodesic until termination\\. </code>",
+ "62":
+ "<code>initialMom : Vec4</code><span class=\"sep\"></span><code class=\"docstring\">Example initial momentum toward black hole\\. </code>",
+ "61":
+ "<code>initialPos : Vec4</code><span class=\"sep\"></span><code class=\"docstring\">Example initial position far from black hole\\. </code>",
+ "60":
+ "<code>schwarzschildSpin : SpinParam</code><span class=\"sep\"></span><code class=\"docstring\">Schwarzschild spin parameter\\. </code>",
+ "6":
+ "<code>Float.sqrt : Float → Float</code><span class=\"sep\"></span><code class=\"docstring\">Computes the square root of a floating-point number.\n\nThis function does not reduce in the kernel. It is implemented in compiled code by the C function\n`sqrt`.\n</code>",
+ "59":
+ "<code>Option.none.{u} {α : Type u} : Option α</code><span class=\"sep\"></span><code class=\"docstring\">No value. </code>",
+ "58":
+ "<code>Bool.true : Bool</code><span class=\"sep\"></span><code class=\"docstring\">The Boolean value `true`, not to be confused with the proposition `True`. </code>",
+ "57": "<code>SpinParam.mk (val : Float) (valid : Bool) : SpinParam</code>",
+ "56":
+ "<code>Option.some.{u} {α : Type u} (val : α) : Option α</code><span class=\"sep\"></span><code class=\"docstring\">Some value of type `α`. </code>",
+ "55":
+ "<code>Option.{u} (α : Type u) : Type u</code><span class=\"sep\"></span><code class=\"docstring\">Optional values, which are either `some` around a value from the underlying type or `none`.\n\n`Option` can represent nullable types or computations that might fail. In the codomain of a function\ntype, it can also represent partiality.\n</code>",
+ "54":
+ "<code>mkSpin (v : Float) : Option SpinParam</code><span class=\"sep\"></span><code class=\"docstring\">Create a spin parameter with runtime validation\\. </code>",
+ "53": "<code>SpinParam.valid (self : SpinParam) : Bool</code>",
+ "52": "<code>SpinParam.val (self : SpinParam) : Float</code>",
+ "51":
+ "<code>SpinParam : Type</code><span class=\"sep\"></span><code class=\"docstring\">Validated spin parameter between 0 and 1\\. </code>",
+ "50": "<code>UInt8</code>",
+ "5":
+ "<code class=\"docstring\">`let` is used to declare a local definition. Example:\n```\nlet x := 1\nlet y := x + 1\nx + y\n```\nSince functions are first class citizens in Lean, you can use `let` to declare\nlocal functions too.\n```\nlet double := fun x =&gt; 2*x\ndouble (double 3)\n```\nFor recursive definitions, you should use `let rec`.\nYou can also perform pattern matching using `let`. For example,\nassume `p` has type `Nat × Nat`, then you can write\n```\nlet (x, y) := p\nx + y\n```\n\nThe *anaphoric let* `let := v` defines a variable called `this`.\n</code>",
+ "49": "<code>RGB.mk (r g b : UInt8) : RGB</code>",
+ "48":
+ "<code class=\"docstring\">`if c then t else e` is notation for `ite c t e`, \"if-then-else\", which decides to\nreturn `t` or `e` depending on whether `c` is true or false. The explicit argument\n`c : Prop` does not have any actual computational content, but there is an additional\n`[Decidable c]` argument synthesized by typeclass inference which actually\ndetermines how to evaluate `c` to true or false. Write `if h : c then t else e`\ninstead for a \"dependent if-then-else\" `dite`, which allows `t`/`e` to use the fact\nthat `c` is true/false.\n</code>",
+ "47":
+ "<code>Float.atan2 (y x : Float) : Float</code><span class=\"sep\"></span><code class=\"docstring\">Computes the arc tangent (inverse tangent) of `y / x` in radians, in the range `-π`–`π`. The signs\nof the arguments determine the quadrant of the result.\n\nThis function does not reduce in the kernel. It is implemented in compiled code by the C function\n`atan2`.\n</code>",
+ "46":
+ "<code>celestialColor (dir : Vec4) : RGB</code><span class=\"sep\"></span><code class=\"docstring\">Map direction to color based on celestial quadrant\\. </code>",
+ "45":
+ "<code>pi : Float</code><span class=\"sep\"></span><code class=\"docstring\">Pi constant for color calculations\\. </code>",
+ "44": "<code>RGB.b (self : RGB) : UInt8</code>",
+ "43": "<code>RGB.g (self : RGB) : UInt8</code>",
+ "42":
+ "<code>UInt8 : Type</code><span class=\"sep\"></span><code class=\"docstring\">Unsigned 8-bit integers.\n\nThis type has special support in the compiler so it can be represented by an unboxed 8-bit value\nrather than wrapping a `BitVec 8`.\n</code>",
+ "41": "<code>RGB.r (self : RGB) : UInt8</code>",
+ "40":
+ "<code>RGB : Type</code><span class=\"sep\"></span><code class=\"docstring\">RGB color triple\\. </code>",
+ "4":
+ "<code>Float : Type</code><span class=\"sep\"></span><code class=\"docstring\">64-bit floating-point numbers.\n\n`Float` corresponds to the IEEE 754 *binary64* format (`double` in C or `f64` in Rust).\nFloating-point numbers are a finite representation of a subset of the real numbers, extended with\nextra “sentinel” values that represent undefined and infinite results as well as separate positive\nand negative zeroes. Arithmetic on floating-point numbers approximates the corresponding operations\non the real numbers by rounding the results to numbers that are representable, propagating error and\ninfinite values.\n\nFloating-point numbers include [subnormal numbers](https://en.wikipedia.org/wiki/Subnormal_number).\nTheir special values are:\n * `NaN`, which denotes a class of “not a number” values that result from operations such as\n   dividing zero by zero, and\n * `Inf` and `-Inf`, which represent positive and infinities that result from dividing non-zero\n   values by zero.\n</code>",
+ "39":
+ "<code>hasCrossedHorizon (horizonRadius : Float) (pos : Vec4) : Bool</code><span class=\"sep\"></span><code class=\"docstring\">Check if ray has crossed the event horizon\\. </code>",
+ "38":
+ "<code>Bool : Type</code><span class=\"sep\"></span><code class=\"docstring\">The Boolean values, `true` and `false`.\n\nLogically speaking, this is equivalent to `Prop` (the type of propositions). The distinction is\npublic important for programming: both propositions and their proofs are erased in the code generator,\nwhile `Bool` corresponds to the Boolean type in most programming languages and carries precisely one\nbit of run-time information.\n</code>",
+ "37":
+ "<code>hasEscaped (escapeRadius : Float) (pos : Vec4) : Bool</code><span class=\"sep\"></span><code class=\"docstring\">Check if ray has escaped to infinity\\. </code>",
+ "36": "<code>GeodesicState → GeodesicState</code>",
+ "35":
+ "<code>rk4Step (rhs : GeodesicState → GeodesicState) (h : Float) (y : GeodesicState) : GeodesicState</code><span class=\"sep\"></span><code class=\"docstring\">Single RK4 integration step\\. </code>",
+ "34":
+ "<code>GeodesicState.scale (c : Float) (s : GeodesicState) : GeodesicState</code><span class=\"sep\"></span><code class=\"docstring\">Scale a state \\(for RK4\\)\\. </code>",
+ "33": "<code>GeodesicState.mk (pos mom : Vec4) : GeodesicState</code>",
+ "32": "<code>GeodesicState</code>",
+ "31":
+ "<code>GeodesicState.add (s1 s2 : GeodesicState) : GeodesicState</code><span class=\"sep\"></span><code class=\"docstring\">Add two states \\(for RK4\\)\\. </code>",
+ "30":
+ "<code>GeodesicState.mom (self : GeodesicState) : Vec4</code><span class=\"sep\"></span><code class=\"docstring\">4\\-momentum \\(null for photons\\) </code>",
+ "3": "<code>Float</code>",
+ "29":
+ "<code>GeodesicState.pos (self : GeodesicState) : Vec4</code><span class=\"sep\"></span><code class=\"docstring\">4\\-position in spacetime </code>",
+ "28":
+ "<code>GeodesicState : Type</code><span class=\"sep\"></span><code class=\"docstring\">Combined state for geodesic integration\\. </code>",
+ "27":
+ "<code class=\"docstring\">`end` closes a `section` or `namespace` scope. If the scope is named `&lt;id&gt;`, it has to be closed\nwith `end &lt;id&gt;`. The `end` command is optional at the end of a file.\n</code>",
+ "26":
+ "<code>HMul.mk.{u, v, w} {α : Type u} {β : Type v} {γ : outParam (Type w)} (hMul : α → β → γ) : HMul α β γ</code>",
+ "25":
+ "<code>HMul.{u, v, w} (α : Type u) (β : Type v) (γ : outParam (Type w)) : Type (max (max u v) w)</code><span class=\"sep\"></span><code class=\"docstring\">The notation typeclass for heterogeneous multiplication.\nThis enables the notation `a * b : γ` where `a : α`, `b : β`.\n</code>",
+ "24": "<code>Add.mk.{u} {α : Type u} (add : α → α → α) : Add α</code>",
+ "23":
+ "<code>Add.{u} (α : Type u) : Type u</code><span class=\"sep\"></span><code class=\"docstring\">The homogeneous version of `HAdd`: `a + b : α` where `a b : α`. </code>",
+ "22":
+ "<code>Vec4.scale (s : Float) (v : Vec4) : Vec4</code><span class=\"sep\"></span><code class=\"docstring\">Scale a vector\\. </code>",
+ "21": "<code>Vec4.mk (t x y z : Float) : Vec4</code>",
+ "20": "<code>Vec4</code>",
+ "2":
+ "<code>spheroidalR (a x y z : Float) : Float</code><span class=\"sep\"></span><code class=\"docstring\">Spheroidal radius from Cartesian coordinates\\. </code>",
+ "19":
+ "<code>Vec4.add (u v : Vec4) : Vec4</code><span class=\"sep\"></span><code class=\"docstring\">Add two vectors\\. </code>",
+ "18":
+ "<code class=\"docstring\">`namespace &lt;id&gt;` opens a section with label `&lt;id&gt;` that influences naming and name resolution inside\nthe section:\n* Declarations names are prefixed: `def seventeen : ℕ := 17` inside a namespace `Nat` is given the\n  full name `Nat.seventeen`.\n* Names introduced by `export` declarations are also prefixed by the identifier.\n* All names starting with `&lt;id&gt;.` become available in the namespace without the prefix. These names\n  are preferred over names introduced by outer namespaces or `open`.\n* Within a namespace, declarations can be `protected`, which excludes them from the effects of\n  opening the namespace.\n\nAs with `section`, namespaces can be nested and the scope of a namespace is terminated by a\ncorresponding `end &lt;id&gt;` or the end of the file.\n\n`namespace` also acts like `section` in delimiting the scope of `variable`, `open`, and other scoped commands.\n</code>",
+ "17":
+ "<code>Repr.{u} (α : Type u) : Type u</code><span class=\"sep\"></span><code class=\"docstring\">The standard way of turning values of some type into `Format`.\n\nWhen rendered this `Format` should be as close as possible to something that can be parsed as the\ninput value.\n</code>",
+ "16": "<code>Vec4.z (self : Vec4) : Float</code>",
+ "15": "<code>Vec4.y (self : Vec4) : Float</code>",
+ "14": "<code>Vec4.x (self : Vec4) : Float</code>",
+ "138": "<code>Outer</code>",
+ "137":
+ "<code>test (o : Outer) : Inner</code><span class=\"sep\"></span><code class=\"docstring\">A function using Outer </code>",
+ "136": "<code>Outer.i (self : Outer) : Inner</code>",
+ "135":
+ "<code>Outer : Type</code><span class=\"sep\"></span><code class=\"docstring\">Outer type </code>",
+ "134":
+ "<code>Int : Type</code><span class=\"sep\"></span><code class=\"docstring\">The integers.\n\nThis type is special-cased by the compiler and overridden with an efficient implementation. The\nruntime has a special representation for `Int` that stores “small” signed numbers directly, while\nlarger numbers use a fast arbitrary-precision arithmetic library (usually\n[GMP](https://gmplib.org/)). A “small number” is an integer that can be encoded with one fewer bits\nthan the platform's pointer size (i.e. 63 bits on 64-bit architectures and 31 bits on 32-bit\narchitectures).\n</code>",
+ "133": "<code>Inner.a (self : Inner) : Int</code>",
+ "132":
+ "<code>Inner : Type</code><span class=\"sep\"></span><code class=\"docstring\">Inner type </code>",
+ "131": "<code>dummy : Nat</code>",
+ "130":
+ "<code>DiskParams.kerrRetrograde : DiskParams</code><span class=\"sep\"></span><code class=\"docstring\">Retrograde Kerr disk \\(larger ISCO\\)\\. </code>",
+ "13": "<code>Vec4.t (self : Vec4) : Float</code>",
+ "129":
+ "<code>Float</code><span class=\"sep\"></span><code class=\"docstring\">Rotation direction: 1 = prograde, \\-1 = retrograde </code>",
+ "128":
+ "<code>DiskParams.kerrPrograde : DiskParams</code><span class=\"sep\"></span><code class=\"docstring\">Prograde Kerr disk \\(smaller ISCO for high spin\\)\\. </code>",
+ "127":
+ "<code>Float</code><span class=\"sep\"></span><code class=\"docstring\">Temperature at inner edge \\(arbitrary units\\) </code>",
+ "126":
+ "<code>Float</code><span class=\"sep\"></span><code class=\"docstring\">Outer edge radius </code>",
+ "125":
+ "<code>Float</code><span class=\"sep\"></span><code class=\"docstring\">Inner edge radius \\(ISCO\\) </code>",
+ "124":
+ "<code>DiskParams.schwarzschild : DiskParams</code><span class=\"sep\"></span><code class=\"docstring\">Standard Schwarzschild disk \\(ISCO at r equals 6M\\)\\. </code>",
+ "123":
+ "<code>Float.toUInt8 : Float → UInt8</code><span class=\"sep\"></span><code class=\"docstring\">Converts a floating-point number to an 8-bit unsigned integer.\n\nIf the given `Float` is non-negative, truncates the value to a positive integer, rounding down and\nclamping to the range of `UInt8`. Returns `0` if the `Float` is negative or `NaN`, and returns the\nlargest `UInt8` value (i.e. `UInt8.size - 1`) if the float is larger than it.\n\nThis function does not reduce in the kernel.\n</code>",
+ "122": "<code>DiskRGB.mk (r g b : UInt8) : DiskRGB</code>",
+ "121":
+ "<code>temperatureToRGB (temp dopplerFac : Float) : DiskRGB</code><span class=\"sep\"></span><code class=\"docstring\">Convert temperature to RGB color with Doppler shift\\. </code>",
+ "120":
+ "<code>Min.min.{u} {α : Type u} [self : Min α] : α → α → α</code><span class=\"sep\"></span><code class=\"docstring\">Returns the lesser of its two arguments. </code>",
+ "12":
+ "<code>Vec4 : Type</code><span class=\"sep\"></span><code class=\"docstring\">A 4\\-vector for spacetime calculations\\. </code>",
+ "119":
+ "<code>clamp01 (x : Float) : Float</code><span class=\"sep\"></span><code class=\"docstring\">Clamp a value to the 0\\-1 range\\. </code>",
+ "118": "<code>DiskRGB.b (self : DiskRGB) : UInt8</code>",
+ "117": "<code>DiskRGB.g (self : DiskRGB) : UInt8</code>",
+ "116": "<code>DiskRGB.r (self : DiskRGB) : UInt8</code>",
+ "115":
+ "<code>DiskRGB : Type</code><span class=\"sep\"></span><code class=\"docstring\">RGB color for disk rendering\\. </code>",
+ "114":
+ "<code>Bool.false : Bool</code><span class=\"sep\"></span><code class=\"docstring\">The Boolean value `false`, not to be confused with the proposition `False`. </code>",
+ "113":
+ "<code>checkCrossing (z zPrev x xPrev y yPrev : Float) : Bool × Float × Float</code><span class=\"sep\"></span><code class=\"docstring\">Check if ray crossed the equatorial plane between steps\\.\n    Returns \\(crossed, radius, phi\\) at crossing\\. </code>",
+ "112":
+ "<code>Float.sin : Float → Float</code><span class=\"sep\"></span><code class=\"docstring\">Computes the sine of a floating-point number in radians.\n\nThis function does not reduce in the kernel. It is implemented in compiled code by the C function\n`sin`.\n</code>",
+ "111":
+ "<code>dopplerFactor (crossPhi crossR rayDirX rayDirY rotSign : Float) : Float</code><span class=\"sep\"></span><code class=\"docstring\">Compute Doppler factor from disk motion\\.\n    Returns greater than 1 for blueshift, less than 1 for redshift\\. </code>",
+ "110":
+ "<code>keplerianVelocity (r : Float) : Float</code><span class=\"sep\"></span><code class=\"docstring\">Keplerian orbital velocity at radius r\\. </code>",
+ "11":
+ "<code>delta (r a : Float) : Float</code><span class=\"sep\"></span><code class=\"docstring\">Delta function for Kerr metric\\. </code>",
+ "109":
+ "<code>Float.pow : Float → Float → Float</code><span class=\"sep\"></span><code class=\"docstring\">Raises one floating-point number to the power of another. Typically used via the `^` operator.\n\nThis function does not reduce in the kernel. It is implemented in compiled code by the C function\n`pow`.\n</code>",
+ "108":
+ "<code>diskTemperature (r innerR innerTemp : Float) : Float</code><span class=\"sep\"></span><code class=\"docstring\">Temperature at radius r relative to inner edge\\. </code>",
+ "107":
+ "<code>DiskParams.rotationSign (self : DiskParams) : Float</code><span class=\"sep\"></span><code class=\"docstring\">Rotation direction: 1 = prograde, \\-1 = retrograde </code>",
+ "106":
+ "<code>DiskParams.innerTemp (self : DiskParams) : Float</code><span class=\"sep\"></span><code class=\"docstring\">Temperature at inner edge \\(arbitrary units\\) </code>",
+ "105":
+ "<code>DiskParams.outerRadius (self : DiskParams) : Float</code><span class=\"sep\"></span><code class=\"docstring\">Outer edge radius </code>",
+ "104":
+ "<code>DiskParams.innerRadius (self : DiskParams) : Float</code><span class=\"sep\"></span><code class=\"docstring\">Inner edge radius \\(ISCO\\) </code>",
+ "103":
+ "<code>DiskParams : Type</code><span class=\"sep\"></span><code class=\"docstring\">Accretion disk configuration\\. </code>",
+ "102":
+ "<code>WormholeParams.narrow : WormholeParams</code><span class=\"sep\"></span><code class=\"docstring\">Narrow wormhole \\- more dramatic lensing\\. </code>",
+ "101":
+ "<code>WormholeParams.wide : WormholeParams</code><span class=\"sep\"></span><code class=\"docstring\">Wide wormhole \\- easier to see through\\. </code>",
+ "100":
+ "<code>Float</code><span class=\"sep\"></span><code class=\"docstring\">Throat radius \\- the minimum \"waist\" of the wormhole </code>",
+ "10":
+ "<code>Float.cos : Float → Float</code><span class=\"sep\"></span><code class=\"docstring\">Computes the cosine of a floating-point number in radians.\n\nThis function does not reduce in the kernel. It is implemented in compiled code by the C function\n`cos`.\n</code>",
+ "1":
+ "<code>doc.verso</code><span class=\"sep\"></span><code class=\"docstring\">whether to use Verso syntax in docstrings</code>",
+ "0":
+ "<code class=\"docstring\">`set_option &lt;id&gt; &lt;value&gt;` sets the option `&lt;id&gt;` to `&lt;value&gt;`. Depending on the type of the option,\nthe value can be `true`, `false`, a string, or a numeral. Options are used to configure behavior of\nLean as well as user-defined extensions. The setting is active until the end of the current `section`\nor `namespace` or the end of the file.\nAuto-completion is available for `&lt;id&gt;` to list available options.\n\n`set_option &lt;id&gt; &lt;value&gt; in &lt;command&gt;` sets the option for just a single command:\n```\nset_option pp.all true in\n#check 1 + 1\n```\nSimilarly, `set_option &lt;id&gt; &lt;value&gt; in` can also be used inside terms and tactics to set an option\nonly in a single term or tactic.\n</code>"}
