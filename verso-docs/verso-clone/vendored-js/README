@@ -1,0 +1,12 @@
+This directory contains "vendored" dependencies, redistributed according to their licenses (all
+MIT).
+
+They are:
+
+elasticlunr - http://elasticlunr.com/
+
+tippy.js - https://github.com/atomiks/tippyjs
+
+popper.js - https://popper.js.org/docs/v2/
+
+KaTeX - https://github.com/KaTeX/KaTeX

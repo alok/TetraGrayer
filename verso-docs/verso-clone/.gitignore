@@ -1,0 +1,10 @@
+/build
+/lakefile.olean
+/lake-packages/*
+/_site
+.DS_Store
+.lake
+_out
+*.olean
+/.verso/
+/src/tests/integration/**/output
